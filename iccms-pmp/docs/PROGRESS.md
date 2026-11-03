@@ -107,6 +107,11 @@ Answers to `MIGRATION_PLAN.md` §10, plus decisions taken later.
 | 10 | Where does the new project live? | New sibling `iccms-pmp/`; docs moved out of `old-ecap-pmp` | 2026-11-03 |
 | 11 | Scope of this session | Finish Phase 1 only | 2026-11-03 |
 | 12 | Missing fixtures | Regenerate from the endpoint catalogue | 2026-11-03 |
+| 13 | Sub-population vocabulary | **Unify**: 14 keys, unprefixed labels (`CALHIV`, `CWLHIV`, …) on every screen, with `dataKey` for the long-form columns and `registers` for per-screen visibility | 2026-11-03 |
+| 14 | Geography | **Confirmed**: 2 provinces / 12 districts as in `districts.ts` and `backend:config/geography.js` | 2026-11-03 |
+| 15 | Assistant name | **Keep "Bumi"**, set once as `siteConfig.assistant.name` | 2026-11-03 |
+| 16 | Support e-mail | **Keep `info@bluecodeltd.com`** for now as `siteConfig.organization.supportEmail` | 2026-11-03 |
+| 17 | Patch files | Developer has `backend.patch` and `legacy-frontend.patch`; to be supplied for citation verification | 2026-11-03 |
 
 ## Installed versions
 
@@ -129,21 +134,15 @@ Answers to `MIGRATION_PLAN.md` §10, plus decisions taken later.
 These were raised by the module audits. The ones marked **before Phase 2/3** block writing
 `program.config.ts` or `derive-access.ts`.
 
-**Before Phase 2 (`src/config`)**
+**Answered (2026-11-03)** — see decisions 13–16 above. Phase 2 can write `src/config` as specified in
+`docs/PHASE_2_CONFIG_SPEC.md`.
 
-1. **Sub-population labels disagree between registers.** `HouseholdRegister` uses `CALHIV`/`CWLHIV`;
-   `VcaRegister` uses `C/ALHIV`/`C/WLHIV` for the same keys, and lists 7 more keys the household
-   register does not. Is that intentional for each screen? If not, one list wins and
-   `program.config.ts` carries it. See `AUDIT.md` §4.1 item 5.
-2. **Geography must match the backend exactly.** `programConfig.geography` has to equal
-   `backend:config/geography.js` (2 provinces, 12 districts) byte for byte, or province users get 403
-   on dashboards (AUDIT §3.1.6). Confirm the 12 districts are still current.
-3. **Assistant name.** The audit keeps finding `Bumi` (`ai-service.ts`, `types.ts`, storage keys).
-   Keep it or rename under `siteConfig.assistant.name`?
-4. **Support e-mail.** `info@bluecodeltd.com` (the vendor) is shown to users in the help content.
-   What should `siteConfig.organization.supportEmail` be?
+- ~~Sub-population vocabulary~~ → **unify** on 14 keys, unprefixed labels, `dataKey` + `registers` fields.
+- ~~Geography~~ → **confirmed** as 2 provinces / 12 districts.
+- ~~Assistant name~~ → **"Bumi"**, from `siteConfig.assistant.name`.
+- ~~Support e-mail~~ → **`info@bluecodeltd.com`** for now, from `siteConfig.organization.supportEmail`.
 
-**Before Phase 3 (`deriveAccess`)**
+**Still open — blocks Phase 3 (`deriveAccess`)**
 
 5. **Who is an admin, a province user, a district user?** Nine rule sites disagree (§4.4). The audit
    proposes a resolution — union of the admin rules, no `VITE_DEFAULT_DISTRICT` fallback, unscoped
@@ -174,6 +173,9 @@ Things noticed out of scope, to handle later.
 - The step-2 drafts (`docs/audit/_drafts/step2/`) still contain 5 stale line citations from the same
   `index.js`/`directus.ts` drift. They are already merged into `AUDIT.md` §3.3–3.5 and are not read by
   later phases, so they were left as-is rather than rewritten.
+- Phase 2 has a full config specification in `docs/PHASE_2_CONFIG_SPEC.md` (decisions 13–16 applied),
+  including the unified 14-key sub-population list and the two config values still marked
+  TODO(dev): the PCZ website URL and the brand asset files.
 - `_drafts/` is meant to be deleted at the end of step 5 per the original plan. **Kept deliberately**:
   they are the provenance of the merged module files and cost nothing. Delete them when Phase 6
   starts, after the module files have been used in anger at least once.

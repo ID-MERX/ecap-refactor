@@ -3674,13 +3674,32 @@ checklist. Counts are occurrences per file (case-insensitive, `grep -ric`).
 5. **Sub-populations.** Three different, non-identical lists:
    - `src/pages/HouseholdRegister.tsx:45-53` and `HouseholdArchivedRegister.tsx:52-...` — 7 keys
      (`calhiv`, `hei`, `cwlhiv`, `agyw`, `csv`, `cfsw`, `abym`) with `CALHIV`-style labels.
-   - `src/pages/VcaRegister.tsx:47-61` — 14 keys including `caahh`, `caichh`, `caich`, `calwd`,
-     `caifhh`, `muc`, `pbfw`, with **`C/ALHIV`** and **`C/WLHIV`** labels (slash prefix), which
-     disagree with the household register's labels for the same key.
+   - `src/pages/VcaRegister.tsx:47-61` and `VcaArchivedRegister.tsx:52-67` — 14 keys including
+     `caahh`, `caichh`, `caich`, `calwd`, `caifhh`, `muc`, `pbfw`, with **`C/ALHIV`** and
+     **`C/WLHIV`** labels (slash prefix), which disagree with the household register's labels for the
+     same key.
+   - **The 14 VCA keys do not map to column names the way the short keys suggest.** `filterKeyToDataKey`
+     (`VcaRegister.tsx:65-73`, `VcaArchivedRegister.tsx:69-77`) maps seven of them to long-form columns
+     (`caahh` → `child_adolescent_in_aged_headed_household`, `caichh` → `..._chronically_ill_headed_household`,
+     `caich` → `..._child_headed_household`, `calwd` → `child_adolescent_living_with_disability`,
+     `caifhh` → `..._female_headed_household`, `muc` → `under_5_malnourished`, `pbfw` → `pbfw`), while the
+     other seven are read by their short key. **None of those long-form columns appears anywhere in the
+     backend source** (grep of `controllers/`), and `caahh`…`muc` do not appear there either, so whether
+     they exist on `children` is **unconfirmed** — they may be ETL-only columns. The household registers
+     have an empty `filterKeyToDataKey` (`HouseholdRegister.tsx:57-59`), so their seven keys are read
+     verbatim as `calhiv`, `hei`, …
+   - The match is strict (`VcaRegister.tsx:238-248`, `HouseholdRegister.tsx:181-190`): a "yes" keeps
+     `"1" | "true" | 1 | true`; a "no" keeps `"0" | "false" | 0 | false | null | undefined`. A column
+     storing `"Yes"`/`"No"` (which is what `/etl/services/:type/summary` filters on, `etlController.js:1481`)
+     matches **neither** button.
    - `src/lib/ai-service.ts:43-50` — a prose list with descriptions, plus two districts that are
      **not in the programme geography** (`Lusaka`, `Ndola`).
-   Target: one `programConfig.subPopulations` array with `key`, `label` and `description`, and a
-   register-specific `label` override if the two really do differ on screen.
+   **Decided (2026-11-03): unify.** One `programConfig.subPopulations` array of
+   `{ key, label, dataKey?, description?, registers }`, using the union of all 14 keys and the
+   unprefixed labels (`CALHIV`, `HEI`, `CWLHIV`, `AGYW`, `C/SV`, `CFSW`, `ABYM`, `CAAHH`, `CAICHH`,
+   `CAICH`, `CALWD`, `CAIFHH`, `MUC`, `PBFW`) on every screen, with `dataKey` carrying the long-form
+   column where legacy had a mapping and `registers` limiting which screens show which key. Phase 4
+   must confirm with the DB owner that the `child_adolescent_in_*` columns exist before wiring them.
 6. **Service domains.** `Schooled`, `Healthy`, `Safe`, `Stable` are hardcoded in the service pages
    and in `src/lib/data-validation.ts`. Target: `programConfig.serviceDomains`.
 7. **Storage keys.** See 4.2 — all of them embed `ecap`.
@@ -4062,9 +4081,11 @@ Ordered by blast radius. Each links to the module audit that owns it.
     feature or gate it.
 
 12. **Three different sub-population vocabularies** (household register, VCA register, AI prompt) with
-    disagreeing labels for the same keys (`CALHIV` vs `C/ALHIV`, `CWLHIV` vs `C/WLHIV`). One config
-    array cannot serve both screens without a per-register label override; decide in Phase 2 when
-    writing `program.config.ts`.
+    disagreeing labels for the same keys (`CALHIV` vs `C/ALHIV`, `CWLHIV` vs `C/WLHIV`). **Resolved
+    2026-11-03: unify** on 14 keys and the unprefixed labels, with `dataKey` and `registers` fields to
+    preserve the legacy mapping and per-screen visibility (§4.1 item 5). Open sub-question for Phase 4:
+    the seven long-form `child_adolescent_in_*` columns the VCA register reads are **not in the backend
+    source**, so confirm they exist on `children` before relying on them.
 
 13. **`/districts` is reachable by district users** even though the sidebar hides it, and it fires
     national count and register queries. It is the clearest example of the S2 class: hiding a nav item
