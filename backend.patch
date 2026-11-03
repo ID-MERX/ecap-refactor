@@ -1,0 +1,670 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..06b6bf1
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,45 @@
++PORT=9003
++ENV=PRODUCTION
++
++# --- Databases (existing) ---
++FlatPGUSER=
++FlatPGHOST=
++FlatPGPORT=5432
++FlatPGPASSWORD=
++FlatPGDATABASE=
++SUPERSET_DB_HOST=
++SUPERSET_DB_PORT=5432
++SUPERSET_DB_USER=
++SUPERSET_DB_PASSWORD=
++SUPERSET_DB_NAME=
++
++# --- SMTP (existing) ---
++SMTP_HOST=
++SMTP_PORT=
++SMTP_SECURE=
++SMTP_USER=
++SMTP_PASS=
++
++# --- Authentication (new) ---
++# Must be the exact value of SECRET in the Directus server's environment.
++DIRECTUS_SECRET=
++# Directus base URL, used to read the caller's profile for data scope.
++DIRECTUS_URL=https://your-directus.example.com
++# "log" for the first deploy (lets requests through, logs missing tokens), then "enforce".
++AUTH_MODE=log
++
++# --- Tablet sync webhook (existing; set it, otherwise anyone can trigger refreshes) ---
++TABLET_SYNC_WEBHOOK_SECRET=
++
++# --- Superset embedded dashboards (new) ---
++SUPERSET_URL=https://your-superset.example.com
++SUPERSET_EMBED_USERNAME=
++SUPERSET_EMBED_PASSWORD=
++# Comma-separated dashboard UUIDs that may be embedded (the old VITE_SUPERSET_DASHBOARD_ID_* values).
++SUPERSET_DASHBOARD_IDS=
++SUPERSET_RLS_ENABLED=true
++SUPERSET_RLS_DISTRICT_COLUMN=district
++# Optional: comma-separated dataset ids to apply RLS to (otherwise applies to all datasets).
++SUPERSET_RLS_DATASET_IDS=
++# Only if Superset rejects guest-token requests with a CSRF error.
++SUPERSET_USE_CSRF=false
+diff --git a/config/geography.js b/config/geography.js
+new file mode 100644
+index 0000000..a49944a
+--- /dev/null
++++ b/config/geography.js
+@@ -0,0 +1,9 @@
++// Program geography, used to turn a province-level user into a district list
++// (e.g. for Superset row-level security). Keep in sync with the frontend's
++// program config until this moves into the database.
++const DISTRICTS_BY_PROVINCE = {
++  "Central Province": ["Chibombo", "Kabwe", "Kapiri Mposhi", "Mkushi", "Mumbwa", "Chisamba", "Serenje"],
++  "Southern Province": ["Livingstone", "Mazabuka", "Monze", "Choma", "Kazungula"],
++};
++
++module.exports = { DISTRICTS_BY_PROVINCE };
+diff --git a/controllers/supersetController.js b/controllers/supersetController.js
+new file mode 100644
+index 0000000..586817f
+--- /dev/null
++++ b/controllers/supersetController.js
+@@ -0,0 +1,102 @@
++const { requestGuestToken, isConfigured } = require("../lib/supersetClient");
++const { deriveScope, getUserProfile } = require("../lib/userScope");
++
++/**
++ * POST /superset/guest-token   body: { dashboardId }
++ *
++ * Returns a Superset guest token for an embedded dashboard. The row-level
++ * security (RLS) rules are built here from the authenticated user's scope;
++ * nothing the browser sends can widen what the user sees.
++ *
++ * Env:
++ *   SUPERSET_DASHBOARD_IDS        comma-separated allowlist of embeddable dashboard UUIDs
++ *   SUPERSET_RLS_ENABLED          "true" (default) | "false"
++ *   SUPERSET_RLS_DISTRICT_COLUMN  column name in the Superset datasets (default "district")
++ *   SUPERSET_RLS_DATASET_IDS      optional comma-separated dataset ids; if set, one RLS
++ *                                 rule is emitted per dataset instead of one global rule
++ */
++
++const list = (value) =>
++  String(value || "")
++    .split(",")
++    .map((s) => s.trim())
++    .filter(Boolean);
++
++const sqlString = (value) => `'${String(value).replace(/'/g, "''")}'`;
++
++const districtColumn = () => {
++  const column = String(process.env.SUPERSET_RLS_DISTRICT_COLUMN || "district").trim();
++  if (!/^[A-Za-z_][A-Za-z0-9_.]*$/.test(column)) {
++    throw new Error("SUPERSET_RLS_DISTRICT_COLUMN is not a valid column name");
++  }
++  return column;
++};
++
++const buildRls = (scope) => {
++  if (String(process.env.SUPERSET_RLS_ENABLED || "true").toLowerCase() === "false") return [];
++  if (scope.level === "national") return [];
++
++  const column = districtColumn();
++  const clause =
++    scope.level === "district"
++      ? `${column} = ${sqlString(scope.district)}`
++      : `${column} IN (${scope.districts.map(sqlString).join(", ")})`;
++
++  const datasetIds = list(process.env.SUPERSET_RLS_DATASET_IDS).map(Number).filter(Number.isInteger);
++  return datasetIds.length ? datasetIds.map((dataset) => ({ dataset, clause })) : [{ clause }];
++};
++
++exports.getGuestToken = async (req, res) => {
++  try {
++    if (!isConfigured()) {
++      return res
++        .status(503)
++        .json({ status: "error", message: "Embedded dashboards are not configured." });
++    }
++
++    // This endpoint always needs a verified user, even when AUTH_MODE=log.
++    if (!req.user || !req.accessToken) {
++      return res
++        .status(401)
++        .json({ status: "fail", message: "You are not logged in! Please log in to get access." });
++    }
++
++    const dashboardId = String((req.body && req.body.dashboardId) || "").trim();
++    const allowed = list(process.env.SUPERSET_DASHBOARD_IDS);
++    if (!dashboardId || !allowed.includes(dashboardId)) {
++      return res
++        .status(400)
++        .json({ status: "fail", message: "Unknown or non-embeddable dashboard." });
++    }
++
++    const profile = await getUserProfile(req.user.id, req.accessToken);
++    const scope = deriveScope(profile, req.user);
++    if (scope.level === "none") {
++      return res.status(403).json({
++        status: "fail",
++        message: "Your account has no data scope assigned. Please contact an administrator.",
++      });
++    }
++
++    const token = await requestGuestToken({
++      dashboardId,
++      user: {
++        username: profile.email || profile.id,
++        first_name: profile.first_name || "",
++        last_name: profile.last_name || "",
++      },
++      rls: buildRls(scope),
++    });
++
++    return res.status(200).json({ status: "success", token });
++  } catch (err) {
++    const upstream = err.response ? ` (Superset ${err.response.status})` : "";
++    console.error(`[superset] guest token failed${upstream}:`, err.message);
++    return res
++      .status(502)
++      .json({ status: "error", message: "Could not load the dashboard. Please try again." });
++  }
++};
++
++// Exported for tests.
++exports._buildRls = buildRls;
+diff --git a/index.js b/index.js
+index 535663b..6d281dd 100755
+--- a/index.js
++++ b/index.js
+@@ -9,6 +9,8 @@ const childRouter = require("./routes/childRoutes");
+ const etlRouter = require("./routes/etlRoutes");
+ const motherRouter = require("./routes/motherRoutes");
+ const agentRouter = require("./routes/agentRoutes");
++const supersetRouter = require("./routes/supersetRoutes");
++const verifyDirectusToken = require("./middleware/verifyDirectusToken");
+ 
+ dotenv.config();
+ 
+@@ -30,11 +32,17 @@ app.use(
+ );
+ 
+ app.use(express.json());
++
++// Every route below requires a valid Directus token, except the few listed
++// in PUBLIC_ROUTES inside the middleware. See AUTH_MODE for staged rollout.
++app.use(verifyDirectusToken);
++
+ app.use("/household", householdRouter);
+ app.use("/child", childRouter);
+ app.use("/etl", etlRouter);
+ app.use("/mother", motherRouter);
+ app.use("/agent", agentRouter);
++app.use("/superset", supersetRouter);
+ 
+ app.get("/", (req, res) => {
+   const imagePath = path.join(
+@@ -44,10 +52,6 @@ app.get("/", (req, res) => {
+   res.status(200).sendFile(imagePath);
+ });
+ 
+-app.get("/clear-cache", (req, res) => {
+-  redisClient.flushdb(function (err, succeeded) {});
+-});
+-
+ app.all("*", (req, res, next) => {
+   res.status(404).json({
+     status: "error",
+diff --git a/lib/supersetClient.js b/lib/supersetClient.js
+new file mode 100644
+index 0000000..36df4d7
+--- /dev/null
++++ b/lib/supersetClient.js
+@@ -0,0 +1,92 @@
++const axios = require("axios");
++
++/**
++ * Server-side Superset client for embedded dashboards.
++ *
++ * Logs in as the embedder service account (credentials live only in this
++ * server's env), caches the access token, and requests guest tokens.
++ *
++ * Env:
++ *   SUPERSET_URL                 e.g. https://superset.example.com
++ *   SUPERSET_EMBED_USERNAME      service account username
++ *   SUPERSET_EMBED_PASSWORD      service account password
++ *   SUPERSET_USE_CSRF=true       only if your Superset requires a CSRF token
++ *                                for /security/guest_token/ (it didn't for the
++ *                                browser-side flow, so it is off by default)
++ */
++
++const baseUrl = () => String(process.env.SUPERSET_URL || "").replace(/\/+$/, "");
++
++let cachedAccessToken = null; // { token, expiresAt }
++
++const decodeExp = (jwtToken) => {
++  try {
++    const payload = JSON.parse(Buffer.from(jwtToken.split(".")[1], "base64url").toString());
++    return typeof payload.exp === "number" ? payload.exp * 1000 : null;
++  } catch {
++    return null;
++  }
++};
++
++const login = async () => {
++  const { data } = await axios.post(
++    `${baseUrl()}/api/v1/security/login`,
++    {
++      username: process.env.SUPERSET_EMBED_USERNAME,
++      password: process.env.SUPERSET_EMBED_PASSWORD,
++      provider: "db",
++      refresh: false,
++    },
++    { timeout: 15_000 },
++  );
++  const token = data && data.access_token;
++  if (!token) throw new Error("Superset login returned no access token");
++  // Refresh a minute early; fall back to 10 minutes if exp is missing.
++  const exp = decodeExp(token) || Date.now() + 10 * 60 * 1000;
++  cachedAccessToken = { token, expiresAt: exp - 60 * 1000 };
++  return token;
++};
++
++const getAccessToken = async () =>
++  cachedAccessToken && cachedAccessToken.expiresAt > Date.now()
++    ? cachedAccessToken.token
++    : login();
++
++const getCsrfHeaders = async (accessToken) => {
++  if (String(process.env.SUPERSET_USE_CSRF).toLowerCase() !== "true") return {};
++  const response = await axios.get(`${baseUrl()}/api/v1/security/csrf_token/`, {
++    headers: { Authorization: `Bearer ${accessToken}` },
++    timeout: 10_000,
++  });
++  const cookies = (response.headers["set-cookie"] || []).map((c) => c.split(";")[0]).join("; ");
++  return { "X-CSRFToken": response.data.result, ...(cookies ? { Cookie: cookies } : {}) };
++};
++
++const requestGuestToken = async ({ dashboardId, user, rls }, retried = false) => {
++  const accessToken = await getAccessToken();
++  try {
++    const csrfHeaders = await getCsrfHeaders(accessToken);
++    const { data } = await axios.post(
++      `${baseUrl()}/api/v1/security/guest_token/`,
++      { user, resources: [{ type: "dashboard", id: dashboardId }], rls },
++      {
++        headers: { Authorization: `Bearer ${accessToken}`, ...csrfHeaders },
++        timeout: 15_000,
++      },
++    );
++    if (!data || !data.token) throw new Error("Superset returned no guest token");
++    return data.token;
++  } catch (err) {
++    // Access token revoked or expired early: log in again once.
++    if (!retried && err.response && err.response.status === 401) {
++      cachedAccessToken = null;
++      return requestGuestToken({ dashboardId, user, rls }, true);
++    }
++    throw err;
++  }
++};
++
++const isConfigured = () =>
++  Boolean(baseUrl() && process.env.SUPERSET_EMBED_USERNAME && process.env.SUPERSET_EMBED_PASSWORD);
++
++module.exports = { requestGuestToken, isConfigured };
+diff --git a/lib/userScope.js b/lib/userScope.js
+new file mode 100644
+index 0000000..8bf72ea
+--- /dev/null
++++ b/lib/userScope.js
+@@ -0,0 +1,81 @@
++const axios = require("axios");
++const { DISTRICTS_BY_PROVINCE } = require("../config/geography");
++
++/**
++ * Works out which data a user may see, from their Directus profile.
++ *
++ * The rules deliberately mirror the frontend's useEffectiveDistrict hook, so
++ * the backend and the UI agree. They are based on free-text profile fields
++ * (description / title / location) and should be replaced by explicit
++ * role/scope fields during the backend refactor; this is the one place to change.
++ *
++ * Returns one of:
++ *   { level: "national" }
++ *   { level: "province", province, districts: [...] }
++ *   { level: "district", district }
++ *   { level: "none" }   -> could not determine a scope: deny access to data
++ */
++const deriveScope = (profile, tokenClaims = {}) => {
++  const description = String(profile.description || "").toLowerCase();
++  const roleName =
++    typeof profile.role === "object" && profile.role
++      ? String(profile.role.name || "").toLowerCase()
++      : "";
++  const location = profile.location && profile.location !== "All" ? profile.location : null;
++  const province = profile.title && profile.title !== "All" ? profile.title : null;
++
++  const isAdmin =
++    tokenClaims.admin_access === true ||
++    roleName === "administrator" ||
++    description.includes("admin") ||
++    description === "ecap+ support" ||
++    // The frontend sidebar treats "has a role but no description" as admin.
++    // Kept so existing admin accounts aren't locked out; revisit in the refactor.
++    (!description && Boolean(roleName) && !location && !province);
++  if (isAdmin) return { level: "national" };
++
++  const isProvinceUser = description.includes("provincial") || description.includes("province");
++  if (isProvinceUser) {
++    const districts = province ? DISTRICTS_BY_PROVINCE[province] : null;
++    return districts && districts.length
++      ? { level: "province", province, districts }
++      : { level: "none" };
++  }
++
++  const isDistrictUser = description.includes("district") || Boolean(location);
++  if (isDistrictUser && location) return { level: "district", district: location };
++
++  return { level: "none" };
++};
++
++// Small in-memory cache so we don't call Directus on every request.
++const PROFILE_TTL_MS = 5 * 60 * 1000;
++const profileCache = new Map(); // userId -> { profile, expires }
++
++/**
++ * Loads the caller's profile from Directus using the caller's own token,
++ * so no Directus admin credentials are needed on this server.
++ */
++const getUserProfile = async (userId, accessToken) => {
++  const cached = profileCache.get(userId);
++  if (cached && cached.expires > Date.now()) return cached.profile;
++
++  const directusUrl = String(process.env.DIRECTUS_URL || "").replace(/\/+$/, "");
++  if (!directusUrl) throw new Error("DIRECTUS_URL is not set");
++
++  const response = await axios.get(`${directusUrl}/users/me`, {
++    params: { fields: "id,email,first_name,last_name,description,title,location,role.name" },
++    headers: { Authorization: `Bearer ${accessToken}` },
++    timeout: 10_000,
++  });
++
++  const profile = response.data && response.data.data;
++  if (!profile || profile.id !== userId) {
++    throw new Error("Directus profile does not match the token");
++  }
++
++  profileCache.set(userId, { profile, expires: Date.now() + PROFILE_TTL_MS });
++  return profile;
++};
++
++module.exports = { deriveScope, getUserProfile };
+diff --git a/middleware/verifyDirectusToken.js b/middleware/verifyDirectusToken.js
+index ee4da13..faaac3b 100755
+--- a/middleware/verifyDirectusToken.js
++++ b/middleware/verifyDirectusToken.js
+@@ -1,47 +1,101 @@
+ const jwt = require("jsonwebtoken");
+ 
+-const verifyDirectusToken = (req, res, next) => {
+-  try {
+-    let token;
+-
+-    // 1. Standard Authorization header
+-    if (
+-      req.headers.authorization &&
+-      req.headers.authorization.startsWith("Bearer")
+-    ) {
+-      token = req.headers.authorization.split(" ")[1];
+-    }
++/**
++ * Verifies the Directus access token sent by the PMP frontend.
++ *
++ * Directus signs its access tokens (HS256) with its own SECRET env var, so
++ * DIRECTUS_SECRET here must be set to the exact same value as SECRET on the
++ * Directus server.
++ *
++ * AUTH_MODE controls rollout:
++ *   - "enforce" (default): requests without a valid token get 401.
++ *   - "log": requests are let through, but missing/invalid tokens are logged.
++ *     Use this for the first deploy to find any frontend call that still
++ *     doesn't send a token, then switch to "enforce".
++ *
++ * Tokens are read from the Authorization header, or from ?token= for
++ * browser-native requests that can't set headers (file downloads, SSE).
++ */
+ 
+-    // 2. Query-string fallback — used by browser-native file downloads
+-    //    (anchor href clicks) where the Authorization header cannot be set.
+-    if (!token && req.query.token) {
+-      token = req.query.token;
+-    }
++// Routes that must stay reachable without a user token.
++// Keep this list short and explicit.
++const PUBLIC_ROUTES = [
++  { method: "GET", path: "/" }, // logo
++  { method: "GET", path: "/agent/health" }, // uptime checks
++  { method: "POST", path: "/etl/tablet-sync/notify" }, // webhook, has its own secret
++];
++
++const isPublic = (req) =>
++  PUBLIC_ROUTES.some((r) => r.method === req.method && r.path === req.path);
++
++const readToken = (req) => {
++  const header = req.headers.authorization;
++  if (header && header.startsWith("Bearer ")) {
++    return header.slice("Bearer ".length).trim();
++  }
++  if (typeof req.query.token === "string" && req.query.token) {
++    return req.query.token;
++  }
++  return null;
++};
+ 
+-    if (!token) {
+-      return res.status(401).json({
+-        status: "fail",
+-        message: "You are not logged in! Please log in to get access.",
+-      });
++const getMode = () =>
++  String(process.env.AUTH_MODE || "enforce").trim().toLowerCase() === "log"
++    ? "log"
++    : "enforce";
++
++const verifyToken = (token) =>
++  new Promise((resolve, reject) => {
++    jwt.verify(
++      token,
++      process.env.DIRECTUS_SECRET,
++      { algorithms: ["HS256"], issuer: "directus" },
++      (err, decoded) => (err ? reject(err) : resolve(decoded)),
++    );
++  });
++
++const verifyDirectusToken = async (req, res, next) => {
++  // CORS preflight requests never carry credentials.
++  if (req.method === "OPTIONS" || isPublic(req)) return next();
++
++  const mode = getMode();
++  const reject = (reason) => {
++    if (mode === "log") {
++      console.warn(
++        `[auth:log-only] ${reason} — ${req.method} ${req.path} (allowed because AUTH_MODE=log)`,
++      );
++      return next();
+     }
++    return res.status(401).json({ status: "fail", message: reason });
++  };
++
++  if (!process.env.DIRECTUS_SECRET) {
++    console.error("[auth] DIRECTUS_SECRET is not set; cannot verify tokens.");
++    if (mode === "log") return next();
++    return res
++      .status(500)
++      .json({ status: "error", message: "Server authentication is not configured." });
++  }
++
++  const token = readToken(req);
++  if (!token) {
++    return reject("You are not logged in! Please log in to get access.");
++  }
+ 
+-    jwt.verify(token, process.env.DIRECTUS_SECRET, (err, decoded) => {
+-      if (err) {
+-        return res.status(401).json({
+-          status: "fail",
+-          message: "Invalid token, please log in again",
+-        });
+-      }
+-      req.user = decoded;
+-      next();
+-    });
+-  } catch (error) {
+-    res.status(500).json({
+-      status: "error",
+-      message: "An unexpected error occurred.",
+-      error: error.message,
+-    });
++  try {
++    const decoded = await verifyToken(token);
++    req.user = decoded; // { id, role, app_access, admin_access, ... }
++    req.accessToken = token;
++    return next();
++  } catch (err) {
++    const reason =
++      err && err.name === "TokenExpiredError"
++        ? "Your session has expired, please log in again."
++        : "Invalid token, please log in again.";
++    return reject(reason);
+   }
+ };
+ 
+ module.exports = verifyDirectusToken;
++module.exports.verifyDirectusToken = verifyDirectusToken;
++module.exports.PUBLIC_ROUTES = PUBLIC_ROUTES;
+diff --git a/routes/supersetRoutes.js b/routes/supersetRoutes.js
+new file mode 100644
+index 0000000..ea5b1d4
+--- /dev/null
++++ b/routes/supersetRoutes.js
+@@ -0,0 +1,7 @@
++const express = require("express");
++const router = express.Router();
++const supersetController = require("./../controllers/supersetController");
++
++router.post("/guest-token", supersetController.getGuestToken);
++
++module.exports = router;
+diff --git a/tests/security.test.js b/tests/security.test.js
+new file mode 100644
+index 0000000..5dcf4dc
+--- /dev/null
++++ b/tests/security.test.js
+@@ -0,0 +1,107 @@
++// Run with: node tests/security.test.js   (no database needed; Directus and Superset are mocked)
++const assert = require("assert");
++const express = require("express");
++const jwt = require("jsonwebtoken");
++const axios = require("axios");
++const path = require("path");
++const B = path.resolve(__dirname, "..");
++
++const SECRET = "test-directus-secret";
++const profiles = {
++  admin: { id: "u-admin", email: "a@x", description: "System Administrator", title: "All", location: "All", role: { name: "Administrator" } },
++  district: { id: "u-dist", email: "d@x", description: "District M&E", title: "Southern Province", location: "Choma", role: { name: "PMP User" } },
++  province: { id: "u-prov", email: "p@x", description: "Provincial Officer", title: "Central Province", location: "All", role: { name: "PMP User" } },
++  nobody: { id: "u-none", email: "n@x", description: "Data clerk", title: "All", location: "All", role: { name: "PMP User" } },
++};
++const tokenFor = (key, opts = {}) =>
++  jwt.sign({ id: profiles[key].id, role: "r", app_access: true, admin_access: false }, SECRET, { issuer: "directus", expiresIn: "15m", ...opts });
++
++let lastGuestBody = null, supersetLogins = 0;
++const listen = (app) => new Promise((r) => { const s = app.listen(0, () => r(s)); });
++
++(async () => {
++  // Mock Directus
++  const directus = express();
++  directus.get("/users/me", (req, res) => {
++    const t = req.headers.authorization.split(" ")[1];
++    const { id } = jwt.verify(t, SECRET);
++    res.json({ data: Object.values(profiles).find((p) => p.id === id) });
++  });
++  const dS = await listen(directus);
++  // Mock Superset
++  const superset = express(); superset.use(express.json());
++  superset.post("/api/v1/security/login", (req, res) => { supersetLogins++; assert.equal(req.body.username, "embedder"); res.json({ access_token: jwt.sign({ sub: 1 }, "s", { expiresIn: "1h" }) }); });
++  superset.post("/api/v1/security/guest_token/", (req, res) => { lastGuestBody = req.body; res.json({ token: "guest-123" }); });
++  const sS = await listen(superset);
++
++  Object.assign(process.env, {
++    DIRECTUS_SECRET: SECRET, DIRECTUS_URL: `http://127.0.0.1:${dS.address().port}`,
++    SUPERSET_URL: `http://127.0.0.1:${sS.address().port}`, SUPERSET_EMBED_USERNAME: "embedder", SUPERSET_EMBED_PASSWORD: "pw",
++    SUPERSET_DASHBOARD_IDS: "dash-1, dash-2", AUTH_MODE: "enforce",
++  });
++
++  const verify = require(`${B}/middleware/verifyDirectusToken`);
++  const app = express(); app.use(express.json()); app.use(verify);
++  app.get("/", (q, r) => r.send("logo"));
++  app.post("/etl/tablet-sync/notify", (q, r) => r.status(202).end());
++  app.get("/child/vcas-count/:d", (q, r) => r.json({ ok: true, user: q.user && q.user.id }));
++  app.use("/superset", require(`${B}/routes/supersetRoutes`));
++  const aS = await listen(app);
++  const api = axios.create({ baseURL: `http://127.0.0.1:${aS.address().port}`, validateStatus: () => true });
++  const auth = (k) => ({ headers: { Authorization: `Bearer ${tokenFor(k)}` } });
++
++  // Auth middleware
++  assert.equal((await api.get("/")).status, 200, "public logo");
++  assert.equal((await api.post("/etl/tablet-sync/notify")).status, 202, "public webhook");
++  assert.equal((await api.get("/child/vcas-count/Choma")).status, 401, "no token -> 401");
++  assert.equal((await api.get("/child/vcas-count/Choma", { headers: { Authorization: "Bearer junk" } })).status, 401, "bad token");
++  const wrongSecret = jwt.sign({ id: "x" }, "other", { issuer: "directus" });
++  assert.equal((await api.get("/child/vcas-count/Choma", { headers: { Authorization: `Bearer ${wrongSecret}` } })).status, 401, "wrong secret");
++  const expired = jwt.sign({ id: "u-admin" }, SECRET, { issuer: "directus", expiresIn: -10 });
++  const exp = await api.get("/child/vcas-count/Choma", { headers: { Authorization: `Bearer ${expired}` } });
++  assert.equal(exp.status, 401); assert.match(exp.data.message, /expired/);
++  const ok = await api.get("/child/vcas-count/Choma", auth("district"));
++  assert.equal(ok.status, 200); assert.equal(ok.data.user, "u-dist");
++  assert.equal((await api.get(`/child/vcas-count/Choma?token=${tokenFor("admin")}`)).status, 200, "query token");
++
++  process.env.AUTH_MODE = "log";
++  assert.equal((await api.get("/child/vcas-count/Choma")).status, 200, "log mode lets through");
++  assert.equal((await api.post("/superset/guest-token", { dashboardId: "dash-1" })).status, 401, "guest token needs user even in log mode");
++  process.env.AUTH_MODE = "enforce";
++
++  // Superset guest tokens
++  let r = await api.post("/superset/guest-token", { dashboardId: "evil" }, auth("admin"));
++  assert.equal(r.status, 400, "allowlist");
++  r = await api.post("/superset/guest-token", { dashboardId: "dash-1" }, auth("admin"));
++  assert.equal(r.status, 200); assert.equal(r.data.token, "guest-123");
++  assert.deepEqual(lastGuestBody.rls, [], "admin: no RLS");
++  assert.deepEqual(lastGuestBody.resources, [{ type: "dashboard", id: "dash-1" }]);
++
++  r = await api.post("/superset/guest-token", { dashboardId: "dash-2" }, auth("district"));
++  assert.equal(r.status, 200); assert.deepEqual(lastGuestBody.rls, [{ clause: "district = 'Choma'" }]);
++
++  r = await api.post("/superset/guest-token", { dashboardId: "dash-1" }, auth("province"));
++  assert.equal(lastGuestBody.rls[0].clause, "district IN ('Chibombo', 'Kabwe', 'Kapiri Mposhi', 'Mkushi', 'Mumbwa', 'Chisamba', 'Serenje')");
++
++  r = await api.post("/superset/guest-token", { dashboardId: "dash-1" }, auth("nobody"));
++  assert.equal(r.status, 403, "no scope -> 403");
++
++  process.env.SUPERSET_RLS_DATASET_IDS = "5,7";
++  await api.post("/superset/guest-token", { dashboardId: "dash-1" }, auth("district"));
++  assert.deepEqual(lastGuestBody.rls, [{ dataset: 5, clause: "district = 'Choma'" }, { dataset: 7, clause: "district = 'Choma'" }]);
++  delete process.env.SUPERSET_RLS_DATASET_IDS;
++
++  assert.equal(supersetLogins, 1, "superset access token cached");
++
++  // Scope rules
++  const { deriveScope } = require(`${B}/lib/userScope`);
++  assert.equal(deriveScope({ description: "", role: { name: "PMP User" }, location: "All", title: "All" }).level, "national", "sidebar blank-description rule");
++  assert.equal(deriveScope({ description: "", role: { name: "PMP User" }, location: "Kabwe", title: "All" }).level, "district");
++  assert.equal(deriveScope({ description: "District officer", location: "All" }).level, "none");
++  assert.equal(deriveScope({ description: "ECAP+ Support" }).level, "national");
++  const { _buildRls } = require(`${B}/controllers/supersetController`);
++  assert.equal(_buildRls({ level: "district", district: "O'Brien" })[0].clause, "district = 'O''Brien'", "quote escaping");
++
++  console.log("All backend tests passed");
++  [dS, sS, aS].forEach((s) => s.close());
++})().catch((e) => { console.error(e); process.exit(1); });

@@ -1,0 +1,239 @@
+diff --git a/src/components/EtlInvalidator.tsx b/src/components/EtlInvalidator.tsx
+index 12dae7b..0f6c1ed 100755
+--- a/src/components/EtlInvalidator.tsx
++++ b/src/components/EtlInvalidator.tsx
+@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
+ import { useQuery, useQueryClient } from "@tanstack/react-query";
+ import { clearAllCacheEntries } from "@/lib/indexedDbCache";
+ import { getBackendBaseUrl } from "@/lib/env";
++import { getStoredToken } from "@/lib/auth";
+ 
+ /**
+  * Push-style cache invalidation tied to Mage AI ETL outcomes.
+@@ -29,8 +30,13 @@ const DQA_BASE_URL = getBackendBaseUrl();
+ 
+ async function fetchLastSuccess(): Promise<string | null> {
+   try {
++    const token = getStoredToken();
++    if (!token) return null;
+     const response = await fetch(`${DQA_BASE_URL}/etl/last-success`, {
+-      headers: { "Content-Type": "application/json" },
++      headers: {
++        "Content-Type": "application/json",
++        Authorization: `Bearer ${token}`,
++      },
+     });
+     if (!response.ok) return null;
+     const data = await response.json();
+diff --git a/src/lib/ai-service.ts b/src/lib/ai-service.ts
+index af459f2..2837995 100755
+--- a/src/lib/ai-service.ts
++++ b/src/lib/ai-service.ts
+@@ -5,11 +5,20 @@
+  * (POST /agent/chat). PII never leaves the server; no third-party API key.
+  */
+ import { getBackendBaseUrl } from "@/lib/env";
++import { getStoredToken } from "@/lib/auth";
+ 
+ const AGENT_BASE_URL =
+   getBackendBaseUrl() ||
+   "https://ecapplus-server-dqa.bluecodeltd.com";
+ 
++const agentHeaders = (): Record<string, string> => {
++  const token = getStoredToken();
++  return {
++    "Content-Type": "application/json",
++    ...(token ? { Authorization: `Bearer ${token}` } : {}),
++  };
++};
++
+ export interface Message {
+   role: "system" | "user" | "assistant";
+   content: string;
+@@ -87,7 +96,7 @@ export const getAiResponse = async (messages: Message[], currentPage?: string) =
+   try {
+     const response = await fetch(`${AGENT_BASE_URL}/agent/chat`, {
+       method: "POST",
+-      headers: { "Content-Type": "application/json" },
++      headers: agentHeaders(),
+       body: JSON.stringify({
+         messages: fullMessages,
+         temperature: 0.7,
+@@ -144,7 +153,7 @@ FORMAT (strict):
+ 
+   const response = await fetch(`${AGENT_BASE_URL}/agent/chat`, {
+     method: "POST",
+-    headers: { "Content-Type": "application/json" },
++    headers: agentHeaders(),
+     body: JSON.stringify({
+       messages: [
+         { role: "system", content: systemPrompt },
+diff --git a/src/lib/api.ts b/src/lib/api.ts
+index 4cc7b2b..609acfc 100755
+--- a/src/lib/api.ts
++++ b/src/lib/api.ts
+@@ -748,11 +748,21 @@ export const getEtlFiles = async (pipeline: string): Promise<EtlFile[]> => {
+   return data?.data ?? [];
+ };
+ 
++// Browser-native downloads (anchor clicks) and EventSource can't send an
++// Authorization header, so these URLs carry the token as ?token=.
++const withTokenParam = (url: string): string => {
++  const token = getStoredToken();
++  if (!token) return url;
++  return `${url}${url.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}`;
++};
++
+ export const getEtlDownloadUrl = (
+   pipeline: string,
+   fileName: string,
+ ): string => {
+-  return `${DQA_BASE_URL}/etl/download/${pipeline}/${encodeURIComponent(fileName)}`;
++  return withTokenParam(
++    `${DQA_BASE_URL}/etl/download/${pipeline}/${encodeURIComponent(fileName)}`,
++  );
+ };
+ 
+ export const sendEtlReport = async () => dqaPost("/etl/send-report");
+@@ -784,7 +794,7 @@ export const getTabletSyncStatus = async (): Promise<TabletSyncStatus> => {
+ };
+ 
+ export const getTabletSyncStreamUrl = (): string => {
+-  return `${DQA_BASE_URL}/etl/tablet-sync/stream`;
++  return withTokenParam(`${DQA_BASE_URL}/etl/tablet-sync/stream`);
+ };
+ 
+ // ─── Facility Performance API ───────────────────────────────────────
+diff --git a/src/lib/superset.ts b/src/lib/superset.ts
+index 5e38d7f..547dc73 100755
+--- a/src/lib/superset.ts
++++ b/src/lib/superset.ts
+@@ -1,101 +1,44 @@
+ /**
+  * Superset Embedded Dashboard Utilities
+  *
+- * Handles authentication with the Superset server and generation of
+- * guest tokens required by the @superset-ui/embedded-sdk.
+- *
+- * Flow:
+- *  1. Login as the "embedder" service account → access_token
+- *  2. Use access_token to request a guest token scoped to a dashboard
+- *  3. Return the guest token to the SDK's fetchGuestToken callback
++ * Guest tokens are issued by the PMP backend (POST /superset/guest-token).
++ * The backend holds the Superset service-account credentials and builds the
++ * row-level-security rules from the logged-in user's scope, so no Superset
++ * credentials are ever shipped to the browser.
+  */
++import { getStoredToken } from "@/lib/auth";
++import { getBackendBaseUrl } from "@/lib/env";
+ 
+ const SUPERSET_DOMAIN = import.meta.env.VITE_SUPERSET_DOMAIN as string;
+-const SUPERSET_USERNAME = import.meta.env.VITE_SUPERSET_USERNAME as string;
+-const SUPERSET_PASSWORD = import.meta.env.VITE_SUPERSET_PASSWORD as string;
+-
+-interface GuestTokenUser {
+-  username: string;
+-  first_name: string;
+-  last_name: string;
+-}
+-
+-interface RlsRule {
+-  clause: string;
+-  dataset?: number;
+-}
+ 
+ /**
+- * Authenticate with Superset using the embedder service account.
+- */
+-async function loginToSuperset(): Promise<string> {
+-  const response = await fetch(`${SUPERSET_DOMAIN}/api/v1/security/login`, {
+-    method: "POST",
+-    headers: { "Content-Type": "application/json" },
+-    body: JSON.stringify({
+-      username: SUPERSET_USERNAME,
+-      password: SUPERSET_PASSWORD,
+-      provider: "db",
+-      refresh: true,
+-    }),
+-  });
+-
+-  if (!response.ok) {
+-    throw new Error(`Superset login failed (${response.status})`);
+-  }
+-
+-  const data = await response.json();
+-  return data.access_token;
+-}
+-
+-/**
+- * Request a guest token scoped to a specific dashboard.
++ * Fetch a guest token for one dashboard.
++ * Pass this to the `fetchGuestToken` callback of embedDashboard().
++ *
++ * The second argument is accepted for backwards compatibility and ignored:
++ * the backend decides who the user is from their session.
+  */
+-async function requestGuestToken(
+-  accessToken: string,
++export async function fetchGuestToken(
+   dashboardId: string,
+-  user: GuestTokenUser,
+-  rls: RlsRule[] = [],
++  _user?: unknown,
+ ): Promise<string> {
+-  const response = await fetch(
+-    `${SUPERSET_DOMAIN}/api/v1/security/guest_token/`,
+-    {
+-      method: "POST",
+-      headers: {
+-        "Content-Type": "application/json",
+-        Authorization: `Bearer ${accessToken}`,
+-      },
+-      body: JSON.stringify({
+-        user,
+-        resources: [{ type: "dashboard", id: dashboardId }],
+-        rls,
+-      }),
++  const token = getStoredToken();
++  if (!token) throw new Error("Not authenticated.");
++
++  const response = await fetch(`${getBackendBaseUrl()}/superset/guest-token`, {
++    method: "POST",
++    headers: {
++      "Content-Type": "application/json",
++      Authorization: `Bearer ${token}`,
+     },
+-  );
++    body: JSON.stringify({ dashboardId }),
++  });
+ 
+-  if (!response.ok) {
+-    throw new Error(`Guest token request failed (${response.status})`);
++  const data = await response.json().catch(() => null);
++  if (!response.ok || !data?.token) {
++    throw new Error(data?.message ?? `Guest token request failed (${response.status})`);
+   }
+-
+-  const data = await response.json();
+-  return data.token;
+-}
+-
+-/**
+- * High-level helper – login + fetch guest token in one call.
+- * Pass this to the `fetchGuestToken` callback of embedDashboard().
+- */
+-export async function fetchGuestToken(
+-  dashboardId: string,
+-  user: GuestTokenUser = {
+-    username: "guest",
+-    first_name: "Guest",
+-    last_name: "User",
+-  },
+-  rls: RlsRule[] = [],
+-): Promise<string> {
+-  const accessToken = await loginToSuperset();
+-  return requestGuestToken(accessToken, dashboardId, user, rls);
++  return data.token as string;
+ }
+ 
+ export { SUPERSET_DOMAIN };
