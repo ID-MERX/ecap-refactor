@@ -1,0 +1,143 @@
+{
+  "GET /etl/facility-performance": {
+    "status": "success",
+    "data": [
+      {
+        "facility": "Mukonchi Rural Health Centre",
+        "district": "Chibombo",
+        "enrolments": "150",
+        "services_this_month": "546",
+        "services_last_month": "435",
+        "tier": "B"
+      },
+      {
+        "facility": "Kabwe General Hospital",
+        "district": "Kabwe",
+        "enrolments": "233",
+        "services_this_month": "216",
+        "services_last_month": "209",
+        "tier": "B"
+      },
+      {
+        "facility": "Monze Mission Clinic",
+        "district": "Kapiri Mposhi",
+        "enrolments": "213",
+        "services_this_month": "538",
+        "services_last_month": "108",
+        "tier": "B"
+      },
+      {
+        "facility": "Choma District Hospital",
+        "district": "Mkushi",
+        "enrolments": "185",
+        "services_this_month": "502",
+        "services_last_month": "198",
+        "tier": "C"
+      },
+      {
+        "facility": "Serenje Health Post",
+        "district": "Mumbwa",
+        "enrolments": "159",
+        "services_this_month": "26",
+        "services_last_month": "564",
+        "tier": "A"
+      },
+      {
+        "facility": "Mazabuka Urban Clinic",
+        "district": "Chisamba",
+        "enrolments": "243",
+        "services_this_month": "209",
+        "services_last_month": "239",
+        "tier": "B"
+      }
+    ]
+  },
+  "GET /etl/caseworker-performance": {
+    "status": "success",
+    "data": [
+      {
+        "caseworker_name": "Chipo Mulenga",
+        "district": "Kabwe",
+        "households": "9",
+        "vcas": "18",
+        "services": "386",
+        "coverage": "59%",
+        "tier": "A"
+      },
+      {
+        "caseworker_name": "Nchimunya Zulu",
+        "district": "Serenje",
+        "households": "67",
+        "vcas": "31",
+        "services": "15",
+        "coverage": "58%",
+        "tier": "C"
+      },
+      {
+        "caseworker_name": "Lweendo Tembo",
+        "district": "Chibombo",
+        "households": "12",
+        "vcas": "57",
+        "services": "21",
+        "coverage": "80%",
+        "tier": "A"
+      },
+      {
+        "caseworker_name": "Lweendo Phiri",
+        "district": "Mkushi",
+        "households": "11",
+        "vcas": "69",
+        "services": "212",
+        "coverage": "53%",
+        "tier": "C"
+      },
+      {
+        "caseworker_name": "Mutinta Zulu",
+        "district": "Livingstone",
+        "households": "13",
+        "vcas": "20",
+        "services": "232",
+        "coverage": "54%",
+        "tier": "A"
+      },
+      {
+        "caseworker_name": "Nchimunya Mulenga",
+        "district": "Mazabuka",
+        "households": "70",
+        "vcas": "138",
+        "services": "300",
+        "coverage": "58%",
+        "tier": "B"
+      }
+    ]
+  },
+  "GET /etl/service-performance": {
+    "status": "success",
+    "data": [
+      {
+        "service": "Schooled",
+        "provided": "768",
+        "coverage": "68%",
+        "tier": "A"
+      },
+      {
+        "service": "Healthy",
+        "provided": "4540",
+        "coverage": "89%",
+        "tier": "C"
+      },
+      {
+        "service": "Safe",
+        "provided": "3296",
+        "coverage": "46%",
+        "tier": "A"
+      },
+      {
+        "service": "Stable",
+        "provided": "3393",
+        "coverage": "82%",
+        "tier": "B"
+      }
+    ]
+  }
+}

@@ -11,15 +11,20 @@ the legacy app in `../old-ecap-pmp`. Read these files at the start of every sess
 - `docs/audit/<module>.md` — feature-by-feature inventory for one module (same names as `src/modules/`;
   app-wide shell behaviour is in `docs/audit/shell.md`). Read only the file(s) for the module you are working on.
 
+Phase 1 is complete. Before trusting a backend line number, read `docs/audit/_SOURCE_BASELINE.md`:
+the audited tree carried the `security-fix` patch, and this workspace does not. The *behaviour* in
+`docs/AUDIT.md` §3.1 is authoritative; the local `middleware/verifyDirectusToken.js` is not.
+
 ## Hard rules
 
 1. **`../old-ecap-pmp` is read-only reference material.** Never edit, delete, move, format,
-   install packages in, or run git commands that change anything there.
+   install packages in, or run git commands that change anything there. The same applies to
+   `../ecap-plus-pmp-backend`. All new work, docs and scripts live in this folder.
 2. **Real backend, no mock data.** The app always talks to the existing live backend (DQA API +
    Directus) configured in `.env`; endpoints and response shapes do not change during this migration.
    The only exception is the training log, which has no API yet and keeps clearly labelled demo data.
    MSW and `test/fixtures/` are for automated tests only and must never be wired into `pnpm dev` or the build.
-   Backend source, if provided (e.g. `../ecap-plus-pmp-backend`), is read-only reference.
+   Backend source (`../ecap-plus-pmp-backend`) is read-only reference.
 3. **Port behaviour, not code.** Read the legacy implementation to learn *what* it does
    (endpoints, params, fields, filters, edge cases, permissions), then write it fresh using the
    patterns in this file. Never copy large blocks of legacy code.
@@ -49,6 +54,21 @@ pnpm test:e2e       # playwright
 pnpm check:brand    # fails if branding/program strings are hardcoded outside src/config
 pnpm check          # all of the above except e2e — run before declaring anything done
 ```
+
+Audit maintenance (Phase 1 tooling, kept for later phases — none of it ships):
+
+```
+python3 scripts/check-citations.py          # re-open every legacy:/backend: citation in docs/
+python3 scripts/check-citations.py --strict # also flag blank lines and >120-line ranges
+python3 scripts/merge-audit-drafts.py       # rebuild docs/audit/<module>.md from _drafts/step3/
+python3 scripts/build-file-map.py --write   # regenerate AUDIT.md section 8
+python3 scripts/draft-fixtures.py           # regenerate test/fixtures/ (deterministic)
+python3 scripts/draft-fixtures.py --check   # fail if fixtures are stale
+```
+
+Run `check-citations.py` after editing any audit file; it takes under a second. An unresolved
+citation is only acceptable if it names one of the patch-only backend files listed in
+`docs/audit/_SOURCE_BASELINE.md`.
 
 ## Structure and import rules
 

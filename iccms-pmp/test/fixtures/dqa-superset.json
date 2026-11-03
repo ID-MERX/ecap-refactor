@@ -1,0 +1,38 @@
+{
+  "POST /superset/guest-token": {
+    "status": "success",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.FIXTURE.signature"
+  },
+  "POST /superset/guest-token#not-configured": {
+    "status": "error",
+    "message": "Superset is not configured on this server."
+  },
+  "POST /superset/guest-token#auth-missing-token": {
+    "status": "fail",
+    "message": "You are not logged in! Please log in to get access."
+  },
+  "POST /superset/guest-token#auth-expired-token": {
+    "status": "fail",
+    "message": "Your session has expired, please log in again."
+  },
+  "POST /superset/guest-token#no-user-log-mode": {
+    "status": "fail",
+    "message": "A signed-in user is required to embed a dashboard."
+  },
+  "POST /superset/guest-token#unknown-dashboard": {
+    "status": "fail",
+    "message": "Dashboard is not in the allowlist."
+  },
+  "POST /superset/guest-token#missing-dashboard-id": {
+    "status": "fail",
+    "message": "dashboardId is required."
+  },
+  "POST /superset/guest-token#no-scope": {
+    "status": "fail",
+    "message": "No data scope is assigned to your account."
+  },
+  "POST /superset/guest-token#upstream-failure": {
+    "status": "error",
+    "message": "Could not obtain a guest token from Superset."
+  }
+}

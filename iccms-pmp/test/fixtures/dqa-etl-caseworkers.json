@@ -1,0 +1,176 @@
+{
+  "GET /etl/caseworker-journeys": {
+    "status": "success",
+    "data": [
+      {
+        "caseworker_name": "Mutinta Chanda",
+        "latitude": -13.59908,
+        "longitude": 28.63361,
+        "district": "Chisamba",
+        "facility": "Mazabuka Urban Clinic",
+        "event_type": "visit",
+        "dateCreated": "2026-08-06T12:27:00.000Z"
+      },
+      {
+        "caseworker_name": "Lweendo Nyirenda",
+        "latitude": -14.48457,
+        "longitude": 29.10456,
+        "district": "Kapiri Mposhi",
+        "facility": "Serenje Health Post",
+        "event_type": "visit",
+        "dateCreated": "2026-11-25T22:16:00.000Z"
+      },
+      {
+        "caseworker_name": "Chileshe Sakala",
+        "latitude": -12.73488,
+        "longitude": 28.34126,
+        "district": "Kabwe",
+        "facility": "Choma District Hospital",
+        "event_type": "visit",
+        "dateCreated": "2026-09-14T20:33:00.000Z"
+      },
+      {
+        "caseworker_name": "Chileshe Nyirenda",
+        "latitude": -13.12792,
+        "longitude": 28.68077,
+        "district": "Chibombo",
+        "facility": "Kabwe General Hospital",
+        "event_type": "registration",
+        "dateCreated": "2026-08-12T20:24:00.000Z"
+      },
+      {
+        "caseworker_name": "Chileshe Mwale",
+        "latitude": -14.17051,
+        "longitude": 27.23361,
+        "district": "Chibombo",
+        "facility": "Serenje Health Post",
+        "event_type": "visit",
+        "dateCreated": "2026-03-03T19:36:00.000Z"
+      },
+      {
+        "caseworker_name": "Lweendo Phiri",
+        "latitude": -13.3682,
+        "longitude": 29.12222,
+        "district": "Kabwe",
+        "facility": "Monze Mission Clinic",
+        "event_type": "service",
+        "dateCreated": "2026-02-17T23:38:00.000Z"
+      },
+      {
+        "caseworker_name": "Kondwani Chanda",
+        "latitude": -13.29625,
+        "longitude": 29.36667,
+        "district": "Kazungula",
+        "facility": "Serenje Health Post",
+        "event_type": "registration",
+        "dateCreated": "2026-10-05T19:50:00.000Z"
+      },
+      {
+        "caseworker_name": "Bwalya Banda",
+        "latitude": -13.26366,
+        "longitude": 28.51016,
+        "district": "Chisamba",
+        "facility": "Mazabuka Urban Clinic",
+        "event_type": "service",
+        "dateCreated": "2026-11-14T18:57:00.000Z"
+      },
+      {
+        "caseworker_name": "Mwansa Mulenga",
+        "latitude": -13.51432,
+        "longitude": 29.55431,
+        "district": "Mumbwa",
+        "facility": "Kabwe General Hospital",
+        "event_type": "service",
+        "dateCreated": "2026-05-14T00:07:00.000Z"
+      },
+      {
+        "caseworker_name": "Nchimunya Sakala",
+        "latitude": -14.69064,
+        "longitude": 28.79871,
+        "district": "Kazungula",
+        "facility": "Serenje Health Post",
+        "event_type": "visit",
+        "dateCreated": "2026-05-20T07:40:00.000Z"
+      },
+      {
+        "caseworker_name": "Mutinta Tembo",
+        "latitude": -14.36678,
+        "longitude": 29.59894,
+        "district": "Kabwe",
+        "facility": "Serenje Health Post",
+        "event_type": "visit",
+        "dateCreated": "2026-05-08T19:17:00.000Z"
+      },
+      {
+        "caseworker_name": "Chipo Chanda",
+        "latitude": -12.36824,
+        "longitude": 28.24674,
+        "district": "Chisamba",
+        "facility": "Choma District Hospital",
+        "event_type": "visit",
+        "dateCreated": "2026-12-01T00:51:00.000Z"
+      }
+    ]
+  },
+  "GET /etl/caseworker-list": {
+    "status": "success",
+    "data": [
+      {
+        "caseworker_name": "Thandiwe Nyirenda",
+        "district": "Chisamba",
+        "facility": "Serenje Health Post",
+        "has_gps": true,
+        "last_seen": "2026-10-04T03:56:00.000Z"
+      },
+      {
+        "caseworker_name": "Thandiwe Banda",
+        "district": "Livingstone",
+        "facility": "Monze Mission Clinic",
+        "has_gps": true,
+        "last_seen": "2026-03-06T12:13:00.000Z"
+      },
+      {
+        "caseworker_name": "Lweendo Mwale",
+        "district": "Mumbwa",
+        "facility": "Serenje Health Post",
+        "has_gps": false,
+        "last_seen": "2026-05-22T13:48:00.000Z"
+      },
+      {
+        "caseworker_name": "Chileshe Mulenga",
+        "district": "Kabwe",
+        "facility": "Serenje Health Post",
+        "has_gps": false,
+        "last_seen": "2026-03-27T16:55:00.000Z"
+      },
+      {
+        "caseworker_name": "Chileshe Nyirenda",
+        "district": "Livingstone",
+        "facility": "Mukonchi Rural Health Centre",
+        "has_gps": true,
+        "last_seen": "2026-02-19T06:56:00.000Z"
+      },
+      {
+        "caseworker_name": "Thandiwe Nyirenda",
+        "district": "Kazungula",
+        "facility": "Kabwe General Hospital",
+        "has_gps": false,
+        "last_seen": "2026-04-26T20:43:00.000Z"
+      },
+      {
+        "caseworker_name": "Chileshe Phiri",
+        "district": "Choma",
+        "facility": "Monze Mission Clinic",
+        "has_gps": true,
+        "last_seen": "2026-07-13T21:58:00.000Z"
+      },
+      {
+        "caseworker_name": "Chileshe Nyirenda",
+        "district": "Livingstone",
+        "facility": "Kabwe General Hospital",
+        "has_gps": false,
+        "last_seen": "2026-03-17T16:46:00.000Z"
+      }
+    ]
+  }
+}

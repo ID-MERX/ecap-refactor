@@ -1,0 +1,380 @@
+{
+  "GET /household/caregiver-services/:household_id(*)": {
+    "status": "success",
+    "data": [
+      {
+        "household_id": "HH-00032",
+        "district": "Livingstone",
+        "service": "Stable",
+        "form_name": "Schooled Form",
+        "service_date": "11-05-2026",
+        "caseworker_name": "Chileshe Chanda",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Monze Mission Clinic",
+        "ward": "Ward 7",
+        "verified": "Yes",
+        "date_created": "2026-10-08T11:40:00.000Z",
+        "caregiver_id": "CG-00001"
+      },
+      {
+        "household_id": "HH-00016",
+        "district": "Kabwe",
+        "service": "Schooled",
+        "form_name": "Safe Form",
+        "service_date": "21-04-2026",
+        "caseworker_name": "Chipo Chanda",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Choma District Hospital",
+        "ward": "Ward 12",
+        "verified": "Yes",
+        "date_created": "2026-01-08T00:36:00.000Z",
+        "caregiver_id": "CG-00002"
+      },
+      {
+        "household_id": "HH-00024",
+        "district": "Mumbwa",
+        "service": "Stable",
+        "form_name": "Safe Form",
+        "service_date": "01-11-2026",
+        "caseworker_name": "Nchimunya Banda",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Kabwe General Hospital",
+        "ward": "Ward 12",
+        "verified": "Yes",
+        "date_created": "2026-04-28T15:59:00.000Z",
+        "caregiver_id": "CG-00003"
+      },
+      {
+        "household_id": "HH-00015",
+        "district": "Kabwe",
+        "service": "Stable",
+        "form_name": "Schooled Form",
+        "service_date": "27-10-2025",
+        "caseworker_name": "Lweendo Banda",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Monze Mission Clinic",
+        "ward": "Ward 2",
+        "verified": "Yes",
+        "date_created": "2026-05-11T20:40:00.000Z",
+        "caregiver_id": "CG-00004"
+      }
+    ]
+  },
+  "GET /household/caregiver-services-by-district/:district(*)": {
+    "status": "success",
+    "data": [
+      {
+        "household_id": "HH-00036",
+        "district": "Kazungula",
+        "service": "Schooled",
+        "form_name": "Safe Form",
+        "service_date": "09-10-2026",
+        "caseworker_name": "Misozi Banda",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Choma District Hospital",
+        "ward": "Ward 12",
+        "verified": "Yes",
+        "date_created": "2026-12-12T11:03:00.000Z",
+        "caregiver_id": "CG-00001"
+      },
+      {
+        "household_id": "HH-00029",
+        "district": "Kabwe",
+        "service": "Schooled",
+        "form_name": "Stable Form",
+        "service_date": "14-08-2026",
+        "caseworker_name": "Kondwani Sakala",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Choma District Hospital",
+        "ward": "Ward 2",
+        "verified": "Yes",
+        "date_created": "2026-09-23T17:23:00.000Z",
+        "caregiver_id": "CG-00002"
+      },
+      {
+        "household_id": "HH-00039",
+        "district": "Chibombo",
+        "service": "Schooled",
+        "form_name": "Safe Form",
+        "service_date": "25-01-2026",
+        "caseworker_name": "Thandiwe Mulenga",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Choma District Hospital",
+        "ward": "Ward 2",
+        "verified": "Yes",
+        "date_created": "2026-12-25T05:35:00.000Z",
+        "caregiver_id": "CG-00003"
+      },
+      {
+        "household_id": "HH-00029",
+        "district": "Monze",
+        "service": "Healthy",
+        "form_name": "Safe Form",
+        "service_date": "03-06-2026",
+        "caseworker_name": "Thandiwe Phiri",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Monze Mission Clinic",
+        "ward": "Ward 12",
+        "verified": "Yes",
+        "date_created": "2026-02-11T06:10:00.000Z",
+        "caregiver_id": "CG-00004"
+      },
+      {
+        "household_id": "HH-00021",
+        "district": "Choma",
+        "service": "Healthy",
+        "form_name": "Healthy Form",
+        "service_date": "23-07-2026",
+        "caseworker_name": "Misozi Mwale",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Choma District Hospital",
+        "ward": "Ward 7",
+        "verified": "No",
+        "date_created": "2026-09-24T04:59:00.000Z",
+        "caregiver_id": "CG-00005"
+      },
+      {
+        "household_id": "HH-00004",
+        "district": "Kazungula",
+        "service": "Stable",
+        "form_name": "Stable Form",
+        "service_date": "10-07-2026",
+        "caseworker_name": "Kondwani Sakala",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Serenje Health Post",
+        "ward": "Ward 7",
+        "verified": "No",
+        "date_created": "2026-12-17T01:22:00.000Z",
+        "caregiver_id": "CG-00006"
+      },
+      {
+        "household_id": "HH-00034",
+        "district": "Choma",
+        "service": "Healthy",
+        "form_name": "Safe Form",
+        "service_date": "01-01-2025",
+        "caseworker_name": "Nchimunya Sakala",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Serenje Health Post",
+        "ward": "Ward 7",
+        "verified": "No",
+        "date_created": "2026-07-26T07:22:00.000Z",
+        "caregiver_id": "CG-00007"
+      },
+      {
+        "household_id": "HH-00008",
+        "district": "Kapiri Mposhi",
+        "service": "Stable",
+        "form_name": "Safe Form",
+        "service_date": "05-02-2026",
+        "caseworker_name": "Mwansa Chanda",
+        "caregiver_name": "Caregiver Name - Confidential",
+        "facility": "Choma District Hospital",
+        "ward": "Ward 2",
+        "verified": "No",
+        "date_created": "2026-08-08T12:10:00.000Z",
+        "caregiver_id": "CG-00008"
+      }
+    ]
+  },
+  "GET /household/caregiver-services-by-month/:district(*)": {
+    "status": "success",
+    "data": [
+      {
+        "district": "Chibombo",
+        "service_count": "210",
+        "service_month": "01-2026"
+      },
+      {
+        "district": "Chibombo",
+        "service_count": "188",
+        "service_month": "02-2026"
+      },
+      {
+        "district": "Chibombo",
+        "service_count": "11",
+        "service_month": "03-2026"
+      },
+      {
+        "district": "Kabwe",
+        "service_count": "189",
+        "service_month": "01-2026"
+      },
+      {
+        "district": "Kabwe",
+        "service_count": "288",
+        "service_month": "02-2026"
+      },
+      {
+        "district": "Kabwe",
+        "service_count": "107",
+        "service_month": "03-2026"
+      },
+      {
+        "district": "Kapiri Mposhi",
+        "service_count": "281",
+        "service_month": "01-2026"
+      },
+      {
+        "district": "Kapiri Mposhi",
+        "service_count": "376",
+        "service_month": "02-2026"
+      },
+      {
+        "district": "Kapiri Mposhi",
+        "service_count": "49",
+        "service_month": "03-2026"
+      }
+    ]
+  },
+  "GET /household/caregiver-referrals/:household_id(*)": {
+    "status": "success",
+    "data": [
+      {
+        "household_id": "HH-00009",
+        "unique_id": "VCA-00001",
+        "district": "Mkushi",
+        "facility": "Mukonchi Rural Health Centre",
+        "caseworker_name": "Chipo Nyirenda",
+        "referred_date": "28-11-2025",
+        "receiving_organization": "Org C",
+        "services_referred": "School fees",
+        "services_provided": "School fees",
+        "case_status": "Active"
+      },
+      {
+        "household_id": "HH-00008",
+        "unique_id": "VCA-00002",
+        "district": "Chibombo",
+        "facility": "Kabwe General Hospital",
+        "caseworker_name": "Nchimunya Nyirenda",
+        "referred_date": "17-06-2026",
+        "receiving_organization": "Org A",
+        "services_referred": "School fees",
+        "services_provided": "School fees",
+        "case_status": "Active"
+      },
+      {
+        "household_id": "HH-00025",
+        "unique_id": "VCA-00003",
+        "district": "Kazungula",
+        "facility": "Monze Mission Clinic",
+        "caseworker_name": "Lweendo Zulu",
+        "referred_date": "01-04-2026",
+        "receiving_organization": "Org A",
+        "services_referred": "ART refill",
+        "services_provided": "Counselling",
+        "case_status": "Active"
+      }
+    ]
+  },
+  "GET /household/caregiver-referrals-by-month/:district(*)": {
+    "status": "success",
+    "data": [
+      {
+        "district": "Chibombo",
+        "referral_count": "39",
+        "referral_month": "01-2026"
+      },
+      {
+        "district": "Chibombo",
+        "referral_count": "54",
+        "referral_month": "02-2026"
+      },
+      {
+        "district": "Chibombo",
+        "referral_count": "63",
+        "referral_month": "03-2026"
+      },
+      {
+        "district": "Kabwe",
+        "referral_count": "12",
+        "referral_month": "01-2026"
+      },
+      {
+        "district": "Kabwe",
+        "referral_count": "4",
+        "referral_month": "02-2026"
+      },
+      {
+        "district": "Kabwe",
+        "referral_count": "68",
+        "referral_month": "03-2026"
+      },
+      {
+        "district": "Kapiri Mposhi",
+        "referral_count": "80",
+        "referral_month": "01-2026"
+      },
+      {
+        "district": "Kapiri Mposhi",
+        "referral_count": "55",
+        "referral_month": "02-2026"
+      },
+      {
+        "district": "Kapiri Mposhi",
+        "referral_count": "24",
+        "referral_month": "03-2026"
+      }
+    ]
+  },
+  "GET /household/caregiver-caseplans/:household_id(*)": {
+    "status": "success",
+    "data": [
+      {
+        "household_id": "HH-00001",
+        "case_plan_id": "CP-00001",
+        "plan_date": "01-01-2026",
+        "status": "Closed",
+        "caseworker_name": "Mwansa Mwale"
+      },
+      {
+        "household_id": "HH-00002",
+        "case_plan_id": "CP-00002",
+        "plan_date": "24-11-2026",
+        "status": "Open",
+        "caseworker_name": "Mwansa Tembo"
+      },
+      {
+        "household_id": "HH-00003",
+        "case_plan_id": "CP-00003",
+        "plan_date": "21-04-2026",
+        "status": "Closed",
+        "caseworker_name": "Misozi Mwale"
+      }
+    ]
+  },
+  "GET /household/caregiver-caseplan-domains/:household_id(*)": {
+    "status": "success",
+    "data": [
+      {
+        "household_id": "HH-00001",
+        "domain": "Schooled",
+        "is_provided": "Yes",
+        "notes": ""
+      },
+      {
+        "household_id": "HH-00001",
+        "domain": "Healthy",
+        "is_provided": "No",
+        "notes": ""
+      },
+      {
+        "household_id": "HH-00001",
+        "domain": "Safe",
+        "is_provided": "Yes",
+        "notes": ""
+      },
+      {
+        "household_id": "HH-00001",
+        "domain": "Stable",
+        "is_provided": "Yes",
+        "notes": ""
+      }
+    ]
+  },
+  "GET /household/caregiver-referrals/:household_id(*)#empty": {
+    "status": "success",
+    "data": []
+  }
+}

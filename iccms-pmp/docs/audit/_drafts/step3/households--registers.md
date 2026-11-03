@@ -50,7 +50,7 @@ Hero block (`legacy:src/pages/HouseholdRegister.tsx:316-383`):
 - [ ] Sidebar: section `"Registers"` → item `{ title: "Households", url: "/households" }` (`legacy:src/components/dashboard/AppSidebar.tsx:56-58`). No visibility rule applies; the filter only touches `/districts` for district users, the `"Admin"` section and the `"Data Pipeline"` section (`legacy:src/components/dashboard/AppSidebar.tsx:166-173`). Active state is exact `pathname === url` (`:183`).
 - [ ] Mobile bottom nav: `{ label: "Registers", url: "/households" }` (`legacy:src/components/dashboard/MobileBottomNav.tsx:8`), no visibility rule. Mobile sheet menu: `{ title: "Household Register", url: "/households" }` (`legacy:src/components/dashboard/DashboardLayout.tsx:36`), no rule.
 - [ ] Global search nav entry: `{ title: "Household Register", url: "/households", category: "Navigation" }` (`legacy:src/components/dashboard/GlobalSearch.tsx:36`), no rule.
-- [ ] Header: the global search box and FY filter are shown on this route (it is not in `HIDDEN_ROUTES`, `legacy:src/components/dashboard/DashboardHeader.tsx:35-43,86`).
+- [ ] Header: the global search box and FY filter are shown on this route (it is not in `HIDDEN_ROUTES`, `legacy:src/components/dashboard/DashboardHeader.tsx:35-43,84-86`).
 - [ ] In-page role checks (all compare free-text profile strings; must become `can()`/scope in the rebuild):
   - `const isDistrictUser = user?.description === "District User";` (`legacy:src/pages/HouseholdRegister.tsx:83`)
   - `const isProvincialUser = user?.description === "Provincial User";` (`:84`)

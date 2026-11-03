@@ -1,7 +1,8 @@
 # ICCMS PMP — Frontend Migration Plan
 
 Rebuild of `../old-ecap-pmp` (branch `development`) into `./iccms-pmp` as a modular,
-config-driven React SPA. Frontend only; the existing backends (custom "DQA" API and Directus)
+config-driven React SPA. Both this plan and the Phase 1 audit live in `iccms-pmp/`, which sits beside
+`../old-ecap-pmp` and `../ecap-plus-pmp-backend`; both reference trees are read-only. Frontend only; the existing backends (custom "DQA" API and Directus)
 stay as they are, except for the small set of backend asks in section 8.
 
 ## 0. How to use this plan
@@ -503,6 +504,12 @@ all polling intervals, and verification (confirmed / not confirmed) of every fin
 Each feature becomes a checkbox list that later phases tick off.
 
 Done when: every route in section 5 has an entry, and the developer has reviewed it.
+
+**Status: complete (2026-11-03).** 23 module files, §1–§8 of `AUDIT.md` written, 17 fixtures, 6,863
+citations machine-checked. See `docs/PROGRESS.md` for the outcome, the four helper scripts
+(`check-citations.py`, `merge-audit-drafts.py`, `build-file-map.py`, `draft-fixtures.py`) and the one
+caveat: the audited backend carried the `security-fix` patch, which is absent here — read
+`docs/audit/_SOURCE_BASELINE.md` before trusting any `backend:` line number.
 
 ### Phase 2 — Scaffold and tooling
 

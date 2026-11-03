@@ -1,0 +1,174 @@
+{
+  "GET /etl/last-success": {
+    "status": "success",
+    "last_success_at": "2026-04-06T08:22:00.000Z"
+  },
+  "GET /etl/pipelines": {
+    "status": "success",
+    "pipelines": [
+      {
+        "key": "households",
+        "name": "Households",
+        "description": "households extract"
+      },
+      {
+        "key": "vcas",
+        "name": "Vcas",
+        "description": "vcas extract"
+      },
+      {
+        "key": "services",
+        "name": "Services",
+        "description": "services extract"
+      },
+      {
+        "key": "pmtct",
+        "name": "Pmtct",
+        "description": "pmtct extract"
+      },
+      {
+        "key": "hts",
+        "name": "Hts",
+        "description": "hts extract"
+      }
+    ]
+  },
+  "GET /etl/files/:pipeline": {
+    "status": "success",
+    "files": [
+      {
+        "file_name": "households_extract.csv",
+        "size_bytes": "34848",
+        "modified_at": "2026-04-17T17:09:00.000Z",
+        "exists": true
+      },
+      {
+        "file_name": "vcas_extract.csv",
+        "size_bytes": "34719",
+        "modified_at": "2026-05-05T10:06:00.000Z",
+        "exists": true
+      }
+    ]
+  },
+  "GET /etl/runs": {
+    "status": "success",
+    "data": [
+      {
+        "run_id": "RUN-00001",
+        "pipeline": "households",
+        "status": "pending",
+        "started_at": "2026-05-24T23:43:00.000Z",
+        "finished_at": "2026-02-28T02:16:00.000Z",
+        "duration_seconds": "39",
+        "triggered_by": "api",
+        "log_excerpt": "INFO  extracted 12,345 rows\nINFO  loaded all_households\nINFO  done"
+      },
+      {
+        "run_id": "RUN-00002",
+        "pipeline": "services",
+        "status": "failed",
+        "started_at": "2026-06-16T06:05:00.000Z",
+        "finished_at": "2026-06-18T17:03:00.000Z",
+        "duration_seconds": "129",
+        "triggered_by": "api",
+        "log_excerpt": "INFO  extracted 12,345 rows\nINFO  loaded all_households\nINFO  done"
+      },
+      {
+        "run_id": "RUN-00003",
+        "pipeline": "services",
+        "status": "success",
+        "started_at": "2026-12-25T00:40:00.000Z",
+        "finished_at": "2026-11-01T20:24:00.000Z",
+        "duration_seconds": "232",
+        "triggered_by": "api",
+        "log_excerpt": "INFO  extracted 12,345 rows\nINFO  loaded all_households\nINFO  done"
+      },
+      {
+        "run_id": "RUN-00004",
+        "pipeline": "vcas",
+        "status": "running",
+        "started_at": "2026-02-05T22:08:00.000Z",
+        "finished_at": "2026-04-03T14:19:00.000Z",
+        "duration_seconds": "866",
+        "triggered_by": "api",
+        "log_excerpt": "INFO  extracted 12,345 rows\nINFO  loaded all_households\nINFO  done"
+      },
+      {
+        "run_id": "RUN-00005",
+        "pipeline": "pmtct",
+        "status": "success",
+        "started_at": "2026-01-10T09:45:00.000Z",
+        "finished_at": "2026-06-11T22:14:00.000Z",
+        "duration_seconds": "278",
+        "triggered_by": "api",
+        "log_excerpt": "INFO  extracted 12,345 rows\nINFO  loaded all_households\nINFO  done"
+      }
+    ]
+  },
+  "GET /etl/runs/:runId": {
+    "status": "success",
+    "data": {
+      "run_id": "RUN-00001",
+      "pipeline": "households",
+      "status": "success",
+      "started_at": "2026-12-25T18:53:00.000Z",
+      "finished_at": "2026-09-14T20:58:00.000Z",
+      "duration_seconds": "388",
+      "triggered_by": "api",
+      "log_excerpt": "INFO  extracted 12,345 rows\nINFO  loaded all_households\nINFO  done"
+    }
+  },
+  "POST /etl/run": {
+    "status": "success",
+    "data": {
+      "run_id": "RUN-00009",
+      "pipeline": "services",
+      "status": "pending",
+      "started_at": "2026-12-08T11:27:00.000Z",
+      "finished_at": "2026-11-21T16:20:00.000Z",
+      "duration_seconds": "223",
+      "triggered_by": "api",
+      "log_excerpt": "INFO  extracted 12,345 rows\nINFO  loaded all_households\nINFO  done"
+    }
+  },
+  "POST /etl/cancel/:runId": {
+    "status": "success",
+    "message": "Cancellation requested."
+  },
+  "POST /etl/send-report": {
+    "status": "success",
+    "message": "Report queued for delivery."
+  },
+  "GET /etl/download/:pipeline/:fileName": "<CSV stream>",
+  "GET /etl/tablet-sync": {
+    "status": "success",
+    "data": {
+      "last_sync_at": "2026-09-15T22:22:00.000Z",
+      "providers": [
+        {
+          "provider": "Provider 1",
+          "tablet_id": "TAB-00001",
+          "last_seen": "2026-12-02T09:35:00.000Z",
+          "synced": true
+        },
+        {
+          "provider": "Provider 2",
+          "tablet_id": "TAB-00002",
+          "last_seen": "2026-10-10T07:19:00.000Z",
+          "synced": false
+        },
+        {
+          "provider": "Provider 3",
+          "tablet_id": "TAB-00003",
+          "last_seen": "2026-09-18T05:39:00.000Z",
+          "synced": true
+        }
+      ]
+    }
+  },
+  "GET /etl/tablet-sync/stream": "<SSE stream: event: sync\\ndata: {...}\\n\\n>",
+  "POST /etl/tablet-sync/notify": {
+    "status": "success",
+    "message": "Notified 2 SSE clients."
+  }
+}

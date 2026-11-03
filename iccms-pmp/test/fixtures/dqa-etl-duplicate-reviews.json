@@ -1,0 +1,33 @@
+{
+  "GET /etl/duplicates/reviews": {
+    "status": "success",
+    "data": [
+      {
+        "run_key": "dup-1",
+        "status": "ignored",
+        "reviewed_by": "Twalumba Sakala",
+        "reviewed_at": "2026-05-24T18:07:00.000Z"
+      },
+      {
+        "run_key": "dup-2",
+        "status": "resolved",
+        "reviewed_by": "Mutinta Tembo",
+        "reviewed_at": "2026-06-26T21:29:00.000Z"
+      },
+      {
+        "run_key": "dup-3",
+        "status": "resolved",
+        "reviewed_by": "Nchimunya Mulenga",
+        "reviewed_at": "2026-04-28T13:27:00.000Z"
+      }
+    ]
+  },
+  "POST /etl/duplicates/review": {
+    "status": "success",
+    "message": "Review saved."
+  },
+  "DELETE /etl/duplicates/review/:run_key": {
+    "status": "success",
+    "message": "Review deleted."
+  }
+}

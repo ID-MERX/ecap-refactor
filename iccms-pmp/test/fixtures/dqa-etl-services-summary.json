@@ -1,0 +1,95 @@
+{
+  "GET /etl/services/:type/summary [type=vca]": {
+    "status": "success",
+    "data": {
+      "type": "vca",
+      "district": "All",
+      "totals": {
+        "schooled": "992",
+        "healthy": "3790",
+        "safe": "289",
+        "stable": "1716"
+      },
+      "beneficiaries": "2417",
+      "households": "1284",
+      "period": {
+        "from": "2025-10-01",
+        "to": "2026-09-30"
+      }
+    }
+  },
+  "GET /etl/services/:type/timeseries": {
+    "status": "success",
+    "data": [
+      {
+        "month": "2026-01",
+        "count": "352"
+      },
+      {
+        "month": "2026-02",
+        "count": "481"
+      },
+      {
+        "month": "2026-03",
+        "count": "865"
+      },
+      {
+        "month": "2026-04",
+        "count": "334"
+      },
+      {
+        "month": "2026-05",
+        "count": "218"
+      },
+      {
+        "month": "2026-06",
+        "count": "486"
+      },
+      {
+        "month": "2026-07",
+        "count": "796"
+      },
+      {
+        "month": "2026-08",
+        "count": "167"
+      },
+      {
+        "month": "2026-09",
+        "count": "742"
+      },
+      {
+        "month": "2026-10",
+        "count": "493"
+      },
+      {
+        "month": "2026-11",
+        "count": "287"
+      },
+      {
+        "month": "2026-12",
+        "count": "594"
+      }
+    ]
+  },
+  "GET /etl/services/:type/distribution": {
+    "status": "success",
+    "data": [
+      {
+        "service": "Schooled",
+        "count": "52"
+      },
+      {
+        "service": "Healthy",
+        "count": "607"
+      },
+      {
+        "service": "Safe",
+        "count": "427"
+      },
+      {
+        "service": "Stable",
+        "count": "491"
+      }
+    ]
+  }
+}

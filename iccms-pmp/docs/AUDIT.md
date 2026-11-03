@@ -36,12 +36,22 @@ security-fix patch is **uncommitted** (legacy: `EtlInvalidator.tsx`, `ai-service
 `controllers/supersetController.js`, `config/geography.js`, `tests/`). No Directus server
 configuration is available, so Directus-side permissions are marked *unverifiable*.
 
-**Evidence format.** `legacy:src/path/File.tsx:123` is a line in `../old-ecap-pmp`;
-`backend:controllers/x.js:45` is a line in `../ecap-plus-pmp-backend`. Line numbers refer to the
-working tree above.
+**Evidence format.** `legacy:<path>:<line>` is a line in `../old-ecap-pmp`;
+`backend:<path>:<line>` is a line in `../ecap-plus-pmp-backend`. Line numbers refer to the
+working tree above. `scripts/check-citations.py` re-opens every one of them; see
+[`CITATION_REPORT.md`](audit/CITATION_REPORT.md).
 
 **Secrets.** Environment files were read only to establish variable *names*. No value from any
 `.env` file appears in these docs or in the fixtures.
+
+**⚠ Baseline warning — the tree this section describes is not the tree in this workspace.** The
+seven backend files the patch adds are absent here, and the local
+`middleware/verifyDirectusToken.js` is the **pre-patch** version (47 lines; no `AUTH_MODE`, no
+`PUBLIC_ROUTES`, no misconfiguration branch). Consequently **every `backend:middleware/verifyDirectusToken.js:*`
+and `backend:index.js:55-60` citation below is out of range against the local file** — the behaviour
+described (sections 1 and 2 of §3.1) is the *patched* behaviour and is what the rebuild must assume.
+All such citations are recorded in [`CITATION_REPORT.md`](audit/CITATION_REPORT.md). Read
+[`_SOURCE_BASELINE.md`](audit/_SOURCE_BASELINE.md) before trusting any backend line number.
 
 **Checkboxes.** Every behaviour a later phase must reproduce is a `- [ ]` item. Phase 5 ticks the
 items in the module file when the behaviour is ported (or strikes them with a reason when a decision
@@ -53,11 +63,112 @@ search · Exports · Charts · Links in / out · Loading / empty / error · Bugs
 
 ## 1. Summary
 
-<!-- PENDING: step 5 -->
+Phase 1 is **complete**. The legacy app is fully inventoried and every behaviour a later phase must
+reproduce is a checkbox: **2,681 checkboxes across 23 module files**, plus 70 endpoint blocks, five
+cross-cutting inventories and 17 test fixtures. No application code was written.
+
+### What was audited
+
+| | |
+| --- | --- |
+| Sources | `../old-ecap-pmp` (React SPA, 45,345 lines across 182 TS/TSX files) and `../ecap-plus-pmp-backend` (Express DQA API, 69 routes) |
+| Legacy routes covered | 24 module files / 47 routes — **100% of `MIGRATION_PLAN.md` §5** |
+| DQA endpoints documented | **69 of 69** registered routes, each with params, response envelope, field table, scope and FY behaviour, error body and legacy callers |
+| Directus operations documented | 37 |
+| Fixtures | 17 files, 69 endpoint keys, deterministic and regenerable |
+| Citations verified | 6,863 checked by `scripts/check-citations.py` (6,731 resolve; the rest are patch-drift, see `docs/audit/CITATION_REPORT.md`) |
+
+### The ten things that shape the rebuild
+
+1. **Access control is the hard problem, not the UI.** Eight front-end rule sites and a ninth in the
+   backend answer "who is this user?" differently from free-text Directus profile fields, and no route
+   is guarded by permission (§4.4, S2, S4). `core/access/derive-access.ts` must be written *before*
+   any module port, with one unit test per role.
+2. **The backend trusts the client for scope.** 35 of 69 endpoints filter by a caller-supplied
+   district; 7 ignore district entirely; 10 are by-ID with no ownership check (S9). The frontend can
+   hide data, but only the backend can protect it. Until backend ask #2 lands, the rebuild must not
+   *pretend* scope is enforced.
+3. **Two registers cannot be held client-side.** `/household/all-households` and
+   `/child/vcas-assessed-register` have no `ORDER BY`/`LIMIT`; at 260,000 records (decision 8) the
+   households pilot must either get server pagination or impose a cap (§6.6).
+4. **Logout wipes nothing today.** The token goes; the 24 h IndexedDB query cache, a secondary
+   response cache, two nationwide `localStorage` lists and the last user's e-mail addresses stay
+   (§4.2, S5). This is the largest single privacy defect and it is cheap to fix correctly.
+5. **One notification poller replaces eleven timers.** Chat alone polls every 3 s, unpaused (§4.3).
+6. **`/referrals` needs backend work before it can reach parity** — both of its endpoints 404 (§6.2).
+7. **Branding is everywhere.** 52 files plus `index.html`; three divergent sub-population
+   vocabularies; a vendor e-mail address in user-facing help (§4.1). `pnpm check:brand` is a Phase 2
+   gate, and `program.config.ts` needs a per-register label override.
+8. **Duplication is the maintenance cost.** `pickValue` ×14, `formatDate` ×10, two CSV helpers with
+   incompatible signatures, two toast systems, two theme systems (§4.6, §4.7). The platform layer
+   exists to collapse these to one each.
+9. **Several "dead" files are wanted.** Decision 2 keeps the six unreferenced dashboard widgets and
+   `VcaServicesDashboard`; decision 3 keeps the orphaned `/services/household-services`. They are
+   audited, not dropped.
+10. **The patch that the audit describes is not in this workspace.** Four backend files are absent and
+    the local auth middleware is the pre-patch version (`docs/audit/_SOURCE_BASELINE.md`). Build
+    against the *documented* behaviour, never against the local file.
+
+### State of the audit by module
+
+Every module file exists. Confidence is highest where the module has been spot-checked against source
+in this session (`shell`, `households`, `auth`, `services`, `districts`, `referrals`, `support`) and
+where the file is short enough to have been read in full by its reader. Phase 5's per-module checklist
+already requires re-reading each module file against the legacy app side by side before porting, which
+is where any residual drift will surface.
+
+### Ready for
+
+**Phase 2 (scaffold and tooling).** It needs §4.1 (brand strings), §4.2 (storage keys), §4.5 (env
+variables) and §7 (fixtures) — all complete. `docs/PROGRESS.md` is updated with the decisions taken
+in this session and the open questions that Phase 2/3 must put to the developer.
+
 
 ## 2. Module files
 
-<!-- PENDING: step 3 -->
+One file per module in `MIGRATION_PLAN.md` §5, plus `shell.md` for app-wide behaviour. These are the
+files later phases read: read the index (§3–§6) plus only the module file you are working on.
+
+Merged from the step-3 reader drafts (`docs/audit/_drafts/step3/`) by `scripts/merge-audit-drafts.py`;
+`support` was audited in this session, the rest were written by the step-3 readers. Citation
+verification is recorded in [`CITATION_REPORT.md`](audit/CITATION_REPORT.md) and the state of the
+source trees in [`_SOURCE_BASELINE.md`](audit/_SOURCE_BASELINE.md). Every file carries one entry per
+legacy route using the template in §0, and every behaviour to reproduce is a `- [ ]` checkbox.
+
+| Module | Layer | Legacy route(s) | New route(s) | Notes | Phase | File |
+| --- | --- | --- | --- | --- | --- | --- |
+| `auth` | core, always on | `/`, `/forgot-password`, `/reset-password`, `/accept-invite`, `/change-password` | `/login`, same others | Login, logout, forgot/reset password, accept invite, forced password change. Highest risk: S4/S5/S6. | 3 | [`auth.md`](audit/auth.md) |
+| `shell` | app-wide | `*` (NotFound) only; owns the route table | n/a | Providers, query client + IndexedDB persister, routing, guards, layout, sidebar, header, FY filter, scope, search, notifications, freshness, theme, toasts. | 3 | [`shell.md`](audit/shell.md) |
+| `households` | households | `/households`, `/households/archived`, `/registers/household-risk`, `/profile/household-details` | `/households`, `/households/archived`, `/households/risk`, `/households/:householdId` | Pilot module (Phase 4). Profile is ~2,000 legacy lines. | 4 | [`households.md`](audit/households.md) |
+| `vcas` | vcas | `/vcas`, `/vcas/archived`, `/registers/vca-risk`, `/profile/vca-details` | `/vcas`, `/vcas/archived`, `/vcas/risk`, `/vcas/:vcaId` | Profile is ~1,800 legacy lines. | 5 | [`vcas.md`](audit/vcas.md) |
+| `caregivers` | caregivers | `/registers/caregiver-risk` | `/caregivers/risk` | Risk register only; caregiver names are always masked. | 5 | [`caregivers.md`](audit/caregivers.md) |
+| `services` | services | `/vca-services`, `/household-services`, `/caregiver-services`, `/profile/{vca,household,caregiver}-service-details`, `/services/household-services` | `/services/:type`, `/services/:type/:recordId` | Generalises the config-driven ServicesPage. Orphan route kept (decision 3). Includes the unrouted `VcaServicesDashboard`. | 5 | [`services.md`](audit/services.md) |
+| `hts` | hts | `/registers/hts`, `/registers/hts-risk`, `/profile/hts-details` | `/hts`, `/hts/risk`, `/hts/:clientId` | The register endpoint ignores the district parameter entirely. | 5 | [`hts.md`](audit/hts.md) |
+| `pmtct` | pmtct | `/registers/pmtct`, `/profile/pmtct-details` | `/pmtct`, `/pmtct/:id` | Both registers ignore the FY window. | 5 | [`pmtct.md`](audit/pmtct.md) |
+| `mother-index` | mother-index | `/registers/mother-index`, `/profile/mother-index-details` | `/mother-index`, `/mother-index/:id` | By-ID fetch needed (legacy passes the whole record through `location.state`). | 5 | [`mother-index.md`](audit/mother-index.md) |
+| `referrals` | referrals | `/referrals` | `/referrals` | **Effectively non-functional in legacy**: both primary endpoints 404. Needs a backend endpoint before it can ship. | 5 | [`referrals.md`](audit/referrals.md) |
+| `flags` | flags | `/flags`, `/flagged-record-form` | `/flags`, `/flags/new?householdId=` | Form must load the household by ID instead of `location.state`. | 5 | [`flags.md`](audit/flags.md) |
+| `performance` | performance | `/performance` | `/performance` | Facility, caseworker and service performance; three endpoints ignore FY. | 5 | [`performance.md`](audit/performance.md) |
+| `caseworkers` | caseworkers | `/caseworker-journeys`, `/profile/caseworker-details` | `/caseworkers/journeys`, `/caseworkers/:caseworkerId` | Leaflet only in the journeys chunk. | 5 | [`caseworkers.md`](audit/caseworkers.md) |
+| `districts` | districts | `/districts` | `/districts` | Sidebar hides it from district users, but the route is open to everyone (S2-style gap). | 5 | [`districts.md`](audit/districts.md) |
+| `dashboard` | dashboard | `/dashboard` | `/dashboard` | Welcome banner, KPI grid, quick links, plus six unreferenced widgets to port (decision 2). | 5 | [`dashboard.md`](audit/dashboard.md) |
+| `calendar` | calendar | `/calendar` | `/calendar` | Contributes calendar-reminder notifications to the single poller. | 5 | [`calendar.md`](audit/calendar.md) |
+| `users` | users | `/users`, `/users/new`, `/users/:id/edit` | same | No route guard in legacy (S2). `AddUser` is ~1,000 lines. | 5 | [`users.md`](audit/users.md) |
+| `account` | account | `/profile` | `/account` | Profile, avatar, password. | 5 | [`account.md`](audit/account.md) |
+| `data-pipeline` | data-pipeline | `/data-pipeline` | `/data-pipeline/:tab?` | 2,288 legacy lines. No route guard in legacy (S2/S3). SSE stream + token-in-URL downloads. | 5 | [`data-pipeline.md`](audit/data-pipeline.md) |
+| `support` | support | `/support` | `/support` | Chat on Directus notifications; calls and voice notes not ported (decision 4). | 5 | [`support.md`](audit/support.md) |
+| `docs` | docs | `/documentation`, `/documentation/:slug` | `/docs`, `/docs/:slug` | Move article content to Markdown with `{{appName}}` placeholders. | 5 | [`docs.md`](audit/docs.md) |
+| `assistant` | assistant (overlay) | floating widget in the layout | overlay | Calls backend `/agent/chat`; the system prompt should move server-side. | 5 | [`assistant.md`](audit/assistant.md) |
+| `training-log` | training-log | `/training-log` | `/training-log` | No API exists: keeps clearly labelled demo data behind a flag that is off in production. | 5 | [`training-log.md`](audit/training-log.md) |
+
+**23 files, 9,027 lines, 2,621 checkboxes.** Sizes (lines / checkboxes):
+
+`shell` 1088/279 · `dashboard` 922/258 · `services` 920/279 · `households` 868/205 · `vcas` 735/171 · `auth` 533/155 · `hts` 493/136 · `data-pipeline` 411/170 · `users` 325/100 · `mother-index` 306/67 · `caseworkers` 240/89 · `performance` 239/70 · `training-log` 239/72 · `flags` 233/76 · `pmtct` 228/70 · `docs` 193/68 · `caregivers` 179/53 · `calendar` 171/64 · `support` 163/54 · `districts` 155/47 · `referrals` 139/46 · `assistant` 132/42 · `account` 115/50
+
+All 24 legacy routes in §5 have an entry, so the Phase 1 "done when" criterion for module
+coverage is met. Risk flags that change what later phases build are collected in §6 (Surprises) and
+repeated inside each module file under **Bugs and quirks** and **Open questions**.
+
 
 ## 3. Endpoint catalogue
 
@@ -3526,44 +3637,672 @@ short-lived signed URL or a cookie instead of the session token in the query str
 
 ### 4.1 Hardcoded brand and program strings
 
-<!-- PENDING: step 4 -->
+**52 files** under `src/` plus `index.html` contain an `ECAP`-family string. `pnpm check:brand` will
+fail on all of them until they are replaced by `@/config`, so this list is also the Phase 2/6 build
+checklist. Counts are occurrences per file (case-insensitive, `grep -ric`).
+
+**Brand strings by file (top 25; the rest are 1–2 occurrences):**
+
+| File | Count | What |
+| --- | --- | --- |
+| `src/pages/DataPipelinePage.tsx` | 23 | Page copy, pipeline labels, table names |
+| `src/pages/AddUser.tsx` | 14 | Invite copy, role names, `VITE_DIRECTUS_USER_ROLE` |
+| `src/pages/EditUser.tsx` | 13 | Same as AddUser |
+| `src/pages/HTSProfile.tsx` | 12 | Section headings and "ECAP+" chips |
+| `src/lib/ai-service.ts` | 10 | The whole assistant system prompt (`:30-70`) |
+| `index.html` | 9 | `<title>`, meta/og tags, PWA manifest names |
+| `src/pages/AcceptInvite.tsx` | 7 | Invite flow copy |
+| `src/lib/directus.ts` | 6 | Role names, notification collections (`flagged_forms_ecapplus*`) |
+| `src/components/LoginCard.tsx` | 6 | Logo alt text, welcome copy |
+| `src/pages/PMTCTProfile.tsx`, `src/pages/MotherIndexRegister.tsx`, `src/constants/mockData.ts`, `src/components/dashboard/AiAssistant.tsx` | 5 each | Copy, training-log demo data, assistant greeting |
+| `src/pages/Users.tsx`, `src/pages/SupportCenter.tsx`, `src/pages/ResetPassword.tsx`, `src/pages/HTSRiskRegister.tsx`, `src/pages/ForgotPassword.tsx` | 4 each | Copy and watermark |
+| `src/pages/PMTCTRegister.tsx`, `src/pages/ChangePassword.tsx`, `src/lib/api.ts`, `src/index.css`, `src/context/ThemeContext.tsx`, `src/components/ui/table.tsx`, `src/components/dashboard/DashboardHeader.tsx`, `src/App.tsx` | 3 each | CSS custom-property names (`--ecap-yellow`), storage keys, table names |
+| 18 further files | 1–2 each | Mostly storage keys and single labels |
+
+**Distinct string families that must move to `src/config`:**
+
+1. **App and organisation name.** `ECAP+`, `ECAP+ PMP`, `ECAP+ Program Management Platform`,
+   `ECAP +` (with a space, used as a watermark in `src/pages/SupportCenter.tsx:688`), `ecapplus`.
+   Target: `siteConfig.appName` / `appShortName`.
+2. **The assistant's identity.** `Bumi` appears in `src/lib/ai-service.ts`, `src/constants/types.ts`,
+   the assistant greeting, and the storage keys `bumi.snapshot.<userId>`
+   (`src/components/dashboard/AiAssistant.tsx:160`). Target: `siteConfig.assistant.name`.
+3. **Support contact.** `info@bluecodeltd.com` (`src/data/supportData.tsx:20`). This is the vendor
+   (Blue Code Ltd), not the programme. Target: `siteConfig.organization.supportEmail`.
+4. **Geography.** `src/constants/districts.ts` — 2 provinces, 12 districts, hardcoded. Must equal
+   `backend:config/geography.js` exactly (AUDIT §3.1.6). Target: `programConfig.geography`.
+5. **Sub-populations.** Three different, non-identical lists:
+   - `src/pages/HouseholdRegister.tsx:45-53` and `HouseholdArchivedRegister.tsx:52-...` — 7 keys
+     (`calhiv`, `hei`, `cwlhiv`, `agyw`, `csv`, `cfsw`, `abym`) with `CALHIV`-style labels.
+   - `src/pages/VcaRegister.tsx:47-61` and `VcaArchivedRegister.tsx:52-67` — 14 keys including
+     `caahh`, `caichh`, `caich`, `calwd`, `caifhh`, `muc`, `pbfw`, with **`C/ALHIV`** and
+     **`C/WLHIV`** labels (slash prefix), which disagree with the household register's labels for the
+     same key.
+   - **The 14 VCA keys do not map to column names the way the short keys suggest.** `filterKeyToDataKey`
+     (`VcaRegister.tsx:65-73`, `VcaArchivedRegister.tsx:69-77`) maps seven of them to long-form columns
+     (`caahh` → `child_adolescent_in_aged_headed_household`, `caichh` → `..._chronically_ill_headed_household`,
+     `caich` → `..._child_headed_household`, `calwd` → `child_adolescent_living_with_disability`,
+     `caifhh` → `..._female_headed_household`, `muc` → `under_5_malnourished`, `pbfw` → `pbfw`), while the
+     other seven are read by their short key. **None of those long-form columns appears anywhere in the
+     backend source** (grep of `controllers/`), and `caahh`…`muc` do not appear there either, so whether
+     they exist on `children` is **unconfirmed** — they may be ETL-only columns. The household registers
+     have an empty `filterKeyToDataKey` (`HouseholdRegister.tsx:57-59`), so their seven keys are read
+     verbatim as `calhiv`, `hei`, …
+   - The match is strict (`VcaRegister.tsx:238-248`, `HouseholdRegister.tsx:181-190`): a "yes" keeps
+     `"1" | "true" | 1 | true`; a "no" keeps `"0" | "false" | 0 | false | null | undefined`. A column
+     storing `"Yes"`/`"No"` (which is what `/etl/services/:type/summary` filters on, `etlController.js:1481`)
+     matches **neither** button.
+   - `src/lib/ai-service.ts:43-50` — a prose list with descriptions, plus two districts that are
+     **not in the programme geography** (`Lusaka`, `Ndola`).
+   **Decided (2026-11-03): unify.** One `programConfig.subPopulations` array of
+   `{ key, label, dataKey?, description?, registers }`, using the union of all 14 keys and the
+   unprefixed labels (`CALHIV`, `HEI`, `CWLHIV`, `AGYW`, `C/SV`, `CFSW`, `ABYM`, `CAAHH`, `CAICHH`,
+   `CAICH`, `CALWD`, `CAIFHH`, `MUC`, `PBFW`) on every screen, with `dataKey` carrying the long-form
+   column where legacy had a mapping and `registers` limiting which screens show which key. Phase 4
+   must confirm with the DB owner that the `child_adolescent_in_*` columns exist before wiring them.
+6. **Service domains.** `Schooled`, `Healthy`, `Safe`, `Stable` are hardcoded in the service pages
+   and in `src/lib/data-validation.ts`. Target: `programConfig.serviceDomains`.
+7. **Storage keys.** See 4.2 — all of them embed `ecap`.
+8. **Theme.** `--ecap-yellow` and friends in `src/index.css`, and hex colours throughout
+   (e.g. `#10b981` / `#0ea5e9` in the Referrals chart). Target: `theme.css` tokens.
+9. **Fiscal year.** No brand string, but the Oct–Sep start month is hardcoded in
+   `src/lib/fiscalYear.ts`. Target: `programConfig.fiscalYear.startMonth`.
+10. **Backend table and collection names.** `flagged_forms_ecapplus`, `flagged_forms_ecapii`,
+    `hts_register_ecapplus`, `monthly_vca_ecapplus`, `monthly_caregiver_ecapplus`,
+    `pmtct_mother_ecapplus`, `pmtct_child_ecapplus`, `date_enrolled_ecap`. These are **API
+    contracts, not branding** — keep them, and allow-list them in `check:brand` (already recorded as
+    a follow-up in PROGRESS.md).
 
 ### 4.2 Storage keys
 
-<!-- PENDING: step 4 -->
+Every key is duplicated by hand today; the rebuild uses `storageNamespace` from `siteConfig` plus a
+fixed key name (`core/lib/storage`). **Logout must clear every row marked "clear on logout".**
+
+| Key | Store | Written by | Contents | Clear on logout |
+| --- | --- | --- | --- | --- |
+| `ecap.access_token` | localStorage | `src/lib/auth.ts:31` | The Directus JWT. **No refresh token, no expiry handling** (S6) | yes |
+| `ecap_plus_persist_buster` | localStorage | `src/App.tsx:161` | Hand-edited cache-buster string for the query persister | yes |
+| `ecap-plus-pmp-react-query` | IndexedDB | `src/App.tsx:146` | The **entire React Query cache**, including beneficiary records, for 24 h. Not namespaced per user (S5) | **yes — today it is not, that is the S5 bug** |
+| `ecap_plus_cache_db` / `api_cache` | IndexedDB | `src/lib/indexedDbCache.ts:6-7` | Secondary raw response cache for list endpoints (`households_by_district:*`, `caregiver_services_by_district:*`, `vca_services_by_district:*`, …), 5–60 s TTL | **yes** |
+| `ecap.known_users`, `ecap.returning_user` | localStorage | `src/components/LoginCard.tsx:40-41` | **E-mail addresses of previous users of this browser**, for the login autocomplete. PII | **yes** |
+| `ecap_plus_pmp.fy_filter_state_v2` | localStorage | `src/context/FyFilterContext.tsx:64` | Fiscal-year window state | yes |
+| `ecap.ui_theme` | localStorage | `src/context/ThemeContext.tsx:40` | Colour overrides chosen through the AI assistant (JSON) | yes |
+| `ecap_sidebar_scroll` | sessionStorage | `src/components/dashboard/AppSidebar.tsx:130` | Sidebar scroll offset | no |
+| `ecap.first_login` | sessionStorage | `src/components/LoginCard.tsx` (set), `WelcomeBanner.tsx:11` (read) | Whether to show the welcome banner | no |
+| `ecapplus.notifications.sound` | localStorage | `src/components/dashboard/DashboardHeader.tsx:186` | `"on"` / `"off"` | yes |
+| `ai_assistant_open` | localStorage | `src/components/dashboard/AiAssistant.tsx:41` | Assistant panel open state | no |
+| `ecap.chat_history.<userId>` | localStorage | `src/components/dashboard/AiAssistant.tsx:140` | **The full assistant conversation**, per user | **yes** |
+| `bumi.snapshot.<userId>` | localStorage | `src/components/dashboard/AiAssistant.tsx:179` | Last-visit metadata for the assistant's greeting | **yes** |
+| `ecap_chunk_reload_at` | sessionStorage | `src/lib/lazyWithRetry.ts:51` | Timestamp of the last stale-chunk reload (loop guard) | no |
+| `ecap_last_caregiver_service_event`, `ecap_last_cw_name` | sessionStorage | service pages | Cross-page "last event" breadcrumb passed between service pages | no |
+| `ecap_cache_nationwide_household_list`, `ecap_cache_nationwide_vca` | localStorage | `src/lib/api.ts:81,292` | **Nationwide beneficiary lists in localStorage** — the largest PII footprint in the app | **yes** |
+
+Notes:
+- There is **no** `sessionStorage` record for the selected record id, but several pages pass the whole
+  record through `location.state` (see §8 and each module's "Links in / out"), which is the
+  equivalent problem: refresh or share an URL and the record is gone.
+- The rebuild has exactly **one** persistence mechanism (React Query → IndexedDB) plus small
+  namespaced UI preferences. `indexedDbCache` and the two `ecap_cache_nationwide_*` keys disappear.
 
 ### 4.3 Polling, timers and streams
 
-<!-- PENDING: step 4 -->
+| Interval | Where | Purpose | Pauses when hidden | Rebuild |
+| --- | --- | --- | --- | --- |
+| **3 s** | `src/pages/SupportCenter.tsx:63` | Chat messages (`["chat-messages", user.id]`) | **no** | Fold into the one notification poller (30 s) |
+| **3 s** | `src/pages/DataPipelinePage.tsx:381-392` | Poll the open ETL run while it is `running`/`pending`, via `setInterval` | n/a (stops on unmount) | Keep, but only while the run is open and the tab is visible |
+| **10 s** | `src/pages/DataPipelinePage.tsx:193` | ETL pipeline/file freshness on the Data Pipeline page | no | `platform/freshness` (60 s) + manual refresh |
+| **30 s** | `src/components/dashboard/DashboardHeader.tsx:99-100` | Directus notifications | yes (`refetchIntervalInBackground: false`) | Keep as the single `NotificationCenter` poller |
+| **30 s** | `src/hooks/useCalendarNotifications.ts:16` | Calendar reminders; also **requests browser Notification permission on mount** (`:21-25`) | **no** | Merge into the notification poller; request permission only from an explicit toggle |
+| **30 s** | `src/components/EtlInvalidator.tsx:56-57` | `/etl/last-success` freshness watcher at the app root | yes | `platform/freshness` (60 s), targeted invalidation |
+| **30 s** | `src/pages/SupportCenter.tsx:70` | User list, for presence dots | no | Remove (presence needs a backend) |
+| **15 min** | `src/pages/DataPipelinePage.tsx:200` | Background pipeline list refresh | no | Keep or drop |
+| **~5 s** | `src/components/RightImageSlider.tsx:23` | Auth-page image carousel | n/a | Decorative; drop or keep per design |
+| **SSE** | `src/pages/DataPipelinePage.tsx:287-295` | `EventSource('/etl/tablet-sync/stream?token=…')` | n/a | Keep SSE behind `platform/freshness`, with a signed short-lived URL |
+| **1 s** | `src/components/chat/VoiceRecorder.tsx:51` | Recording elapsed timer | n/a | Not ported (voice notes declined) |
+| **≤1 s** | `src/pages/CaseworkerJourneys.tsx:443` | Journey playback animation | n/a | Keep, in the journeys chunk only |
+
+So a logged-in user on `/support` with a stale dashboard is issuing roughly **20 requests a minute
+per tab** before they click anything: 20 from chat (3 s), 2 from the user list, 2 from notifications,
+1 from `/etl/last-success`, 1–2 from calendar reminders. The rebuild collapses this to one 30 s
+notification poll and one 60 s freshness poll, both paused when the tab is hidden.
 
 ### 4.4 Access rules and disagreements
 
-<!-- PENDING: step 4 -->
+There is **no access-control module** in the legacy app. The same question — "who is this user?" — is
+answered by reading free-text Directus profile fields (`description`, `title`, `location`) in **at
+least eight different places, with different rules**. This is finding **S4** and it is confirmed.
+
+**The profile fields, and what each place assumes:**
+
+| Field | Assumed meaning | Set by |
+| --- | --- | --- |
+| `description` | free-text role label, with magic values `"Administrator"`, `"Support User"`, `"District User"`, `"Provincial User"`, `"Facility User"`, `"ecap+ support"`, `"ECAP+ Support"` | `AddUser` / `EditUser` (free text) and the Directus UI |
+| `title` | the user's **province** (or `"All"`) | same |
+| `location` | the user's **district** (or `"All"`) | same |
+| `role.name` | the Directus role — used for "is admin" in some places and ignored in others | Directus |
+
+**The eight rules:**
+
+| # | Where | Admin rule | Province rule | District rule |
+| --- | --- | --- | --- | --- |
+| A1 | `src/hooks/useEffectiveDistrict.ts:7-10` | `description` contains `admin`/`administrator` **or** equals `ecap+ support` | `description` contains `provincial`/`province` | `description` contains `district` **or** (`location` set and not `All` and not admin and not province) |
+| A2 | `src/components/dashboard/AppSidebar.tsx:150-160` | `role.name.toLowerCase() === "administrator"` **or** `description === "Administrator"` **or** (no `description` and a role name) | `description === "Provincial User"` (exact) | `description === "District User"` (exact) |
+| A3 | `src/pages/Documentation.tsx:62-71` | none — displays `role.name`, falling back to `description` | — | — |
+| A4 | `src/lib/directus.ts:640-654` (`isFlagNotifyRecipient`) | notified if `role.name` contains any of `administrator`, `supervisor`, `qa`, `data quality`, `manager` | — | — |
+| A5 | `src/pages/SupportCenter.tsx:85-104` | `role.name === "Administrator"`; support = `role.name` contains `support` | — | standard users see everyone except `Administrator` and roles containing `ecap ii` |
+| A6 | `src/pages/DataPipelinePage.tsx:169` | `description.trim() === "Administrator"` (the value is computed and then **never used** — the admin block is commented out at `:1781`) | — | — |
+| A7 | `src/components/dashboard/MetricsGrid.tsx:124`, `src/components/dashboard/services/ServicesPage.tsx:193-194`, `src/pages/CaseworkerJourneys.tsx:230-231` | none | `description === "Provincial User"` and `title` | `description === "District User"` and `location` |
+| A8 | `src/pages/CaregiverRiskRegister.tsx:63,72,270`, `src/pages/Flags.tsx:37` | none | — | `description === "District User"` and `location` (district select disabled) |
+| A9 | `src/pages/WelcomeBanner.tsx:14-27` | `description === "Administrator"` | `description === "Provincial User"` | `description === "District User"` |
+| A10 | `src/components/LoginCard.tsx` / `src/context/AuthContext.tsx` | none | — | — |
+
+Backend (`backend:lib/userScope.js:18-49`, quoted in §3.1.3, file not in this tree) is an **eleventh**
+rule: admin if the token's `admin_access` is true, or `role.name === "administrator"`, or
+`description` contains `admin`, or `description === "ecap+ support"`, or (`description` empty and a
+role name and no location and no province); province if `description` contains `provincial`/`province`;
+district if (`description` contains `district` **or** a location is set) and a location is set.
+
+**Where they actually disagree:**
+
+1. **Case sensitivity.** A1 lowercases `description` before matching; A2/A7/A9 compare exact strings
+   (`"Administrator"`, `"District User"`). A user whose description is `"administrator"` or
+   `"District user"` is an admin for `useEffectiveDistrict` (and therefore sees every district in the
+   picker) but **not** for the sidebar, which then shows them the Admin section only if they also
+   have a Directus role named `administrator`.
+2. **Role name vs description.** A2 treats a user with **no** description but a Directus role as an
+   admin (`!user.description && roleName !== ""`). A1 does not. So such a user gets the Admin
+   sidebar but a single-district scope.
+3. **Support.** A2 calls support `description === "Support User" || role.name` contains `support`;
+   A1 calls it `description === "ecap+ support"`; A5 uses `role.name` only. Three definitions, and
+   A1's value (`ecap+ support`) does not exist in the AddUser form's vocabulary.
+4. **Province.** A1 accepts any description containing `province`; A2/A7 require exactly
+   `"Provincial User"`. A description of `"Provincial Officer"` is a province user to A1 and a
+   non-province user to A7, which then falls through to A7's district branch and yields nothing.
+5. **Empty location.** A1 falls back to `user.district` and then `VITE_DEFAULT_DISTRICT`
+   (`src/lib/api.ts:7`); A7/A8 use `user.location` only. A user with no location is therefore
+   "national" to A1's district fallback and "no scope" to A7/A8 — and the `VITE_DEFAULT_DISTRICT`
+   fallback **silently gives every unscoped user that district's data**.
+6. **Route guards.** Only `ProtectedRoute` (authenticated + password change) guards routes. **No
+   route checks a role.** `/users`, `/users/new`, `/users/:id/edit` and `/data-pipeline` are reachable
+   by any logged-in user who types the URL (S2). `/districts` is hidden in the sidebar from district
+   users but is reachable and shows national data (A1 gives a district user `availableDistricts =
+   [district]`, but the page also fires national queries).
+7. **Sidebar section label.** The "Data pipeline" section is filtered by comparing
+   `section.label === "Data Pipeline"` (`AppSidebar.tsx:172`) against a section labelled
+   `"Data pipeline"` (`src/components/dashboard/AppSidebar.tsx:98`). The comparison never matches, so the section is visible to
+   everyone (S3). Confirmed.
+
+**What `deriveAccess` must implement (Phase 3).** One function, one set of rules, with a unit test
+per role, and a written record of which legacy behaviour was chosen where they disagree. The
+proposed resolution:
+
+```
+level: "national" | "province" | "district"
+```
+
+- **national** — Directus `admin_access` **or** `role.name` is `administrator` **or** `description`
+  (normalised) contains `admin` **or** is one of the support labels. This is the union of A1, A2 and
+  the backend rule, which is the safest superset for *display*, and the backend already enforces the
+  data boundary.
+- **province** — `description` contains `provincial`/`province` (A1 + backend), and `title` is a
+  known province. If `title` is missing or unknown → `level: "none"`, exactly as the backend does.
+- **district** — `location` is set and not `All`. **No `VITE_DEFAULT_DISTRICT` fallback**: an
+  unscoped user gets `level: "none"` and the shell shows a "no data scope assigned" state, which is
+  what the backend already does for Superset.
+- **none** — everything else. Deny data, never default to nationwide.
+- **Permissions** are a separate set derived from `level` plus explicit flags — not from role-name
+  string matching. Minimum set for Phase 3: `registers.view`, `records.view`, `pipeline.view`,
+  `users.manage`, `flags.resolve`, `support.viewAllUsers`, `scope.national`, `scope.province`,
+  `scope.district`.
+- **The disagreement list above becomes a table in `docs/PROGRESS.md`** with the chosen behaviour per
+  row, so the developer can override any of them before Phase 5 ports the pages that used the old
+  rule.
 
 ### 4.5 Environment variables
 
-<!-- PENDING: step 4 -->
+`vite.config.ts:7` sets `envPrefix: ["VITE_", "REACT_"]`, so **every** `REACT_*` variable is also
+shipped to the browser. `src/lib/env.ts` reads `REACT_APP_BASE_URL` (Directus) and
+`REACT_PUBLIC_API_URL` (DQA); everything else reads `import.meta.env` directly.
+
+| Variable | Read at | Shipped to browser | Purpose | New variable |
+| --- | --- | --- | --- | --- |
+| `REACT_APP_BASE_URL` | `src/lib/env.ts:13` | yes | Directus REST base | `VITE_DIRECTUS_URL` |
+| `REACT_PUBLIC_API_URL` | `src/lib/env.ts:16` | yes | DQA backend base | `VITE_API_URL` |
+| `VITE_SUPERSET_DOMAIN` | `src/lib/superset.ts:12` | yes | Superset host for the embed SDK | `VITE_SUPERSET_URL` |
+| `VITE_SUPERSET_DASHBOARD_ID_1..3` | `src/pages/Charts.tsx:16,21,26` | yes | Dashboard UUIDs | `VITE_SUPERSET_DASHBOARDS` (JSON map) |
+| `VITE_DIRECTUS_USER_ROLE` | `src/lib/directus.ts:3,791,827` | yes (a role UUID, not a secret) | Role for invited users | `VITE_DIRECTUS_INVITE_ROLE` |
+| `VITE_RESET_PASSWORD_URL` | `src/pages/AddUser.tsx:407`, `ForgotPassword.tsx:28`, `Profile.tsx:233`, `Users.tsx:124` | yes | Base URL for reset links | **removed** — derive from `window.location.origin` |
+| `VITE_DEFAULT_DISTRICT` | `src/lib/api.ts:7` | yes | Fallback district for unscoped users | **removed** — scope comes from access |
+| `VITE_DEBUG_API` | `src/lib/api.ts:16` | yes | Verbose request logging | `VITE_DEBUG_API` |
+| `VITE_SUPERSET_USERNAME` / `VITE_SUPERSET_PASSWORD` | not read in this tree (removed by the security patch) | — | Superset service account (S1) | **never reintroduce** |
+| `VITE_GROQ_API_KEY` | not read in this tree (S7) | — | Old assistant key | **never reintroduce** |
+| `VITE_` / `REACT_` (bare) | `vite.config.ts:7` | — | Prefix list | — |
+
+Also present and **not** a frontend concern: CORS allow-list origins, `DIRECTUS_SECRET`,
+`TABLET_SYNC_WEBHOOK_SECRET` and the Superset embedder credentials live in the **backend** env
+(see `old-ecap-pmp/README.md` §Rollout). None of them may appear in any `VITE_*` variable.
 
 ### 4.6 Dead and unreferenced code
 
-<!-- PENDING: step 4 -->
+Confirmed by full-tree grep for imports (count = files importing the module outside itself):
+
+**Unrouted pages and components (0 importers):**
+`src/pages/VcaServicesDashboard.tsx`, `src/components/dashboard/ServiceInsights.tsx`,
+`RecentActivity.tsx`, `DataQualityChart.tsx`, `ActionQueueBanner.tsx`, `CalendarWidget.tsx`,
+`ProvincialBreakdown.tsx`, **and `src/pages/HouseholdServicesPage.tsx`** — the last one is routed at
+`/services/household-services` but nothing links to it. **Decision 2**: port them all, including
+`VcaServicesDashboard`. They are audited in `docs/audit/dashboard.md` (widgets) and
+`docs/audit/services.md` (the VCA services dashboard).
+
+**Unused UI primitives (0 importers outside `components/ui/`)** — 20 files:
+`accordion`, `aspect-ratio`, `breadcrumb`, `carousel`, `checkbox`, `collapsible`, `context-menu`,
+`drawer`, `hover-card`, `input-otp`, `label`, `menubar`, `navigation-menu`, `radio-group`,
+`resizable`, `slider`, `switch`, `toggle`, `toggle-group`, `use-toast`. Drop them; add back with the
+shadcn CLI when a module actually needs one.
+
+**Dead utilities and code paths:**
+- `src/components/ui/use-toast.ts` — re-export, never imported; the Radix toast store
+  (`src/hooks/use-toast.ts`) is mounted but **no feature code calls it** (sonner is used instead).
+- `src/lib/sounds.ts:playBell` — never called (`playDrop` is used by the assistant).
+- `src/constants/api.ts` — training-log mock adapter, reachable only from `/training-log`.
+- `src/constants/mockData.ts` — demo training-log data (kept, behind a flag).
+- `src/test/example.test.ts` — the only test in the app: `expect(true).toBe(true)`.
+- `src/pages/Documentation.tsx:77` calls `getTotalHouseholdsCount()` with no district, which builds a
+  URL with no trailing segment and **404s** (AUDIT §3.2).
+- `src/pages/Referrals.tsx` calls two endpoints that do not exist and silently falls back
+  (see `docs/audit/referrals.md`).
+- `src/lib/directus.ts` exports `getVcaProfileById`, `triggerEtlPipeline`, `cancelEtlRun`,
+  `listRoles`, `getUser` and others with no live importer (AUDIT §3.5).
+- `src/pages/DataPipelinePage.tsx:169` computes `isAdminUser`, then the block that used it is
+  commented out (`:1781`).
+
+**Two of everything:**
+- Toasts: Radix (`src/hooks/use-toast.ts`) + sonner. → sonner only.
+- Themes: `src/context/ThemeContext.tsx` + `next-themes` (used by `components/ui/sonner.tsx` with no
+  provider). → one shadcn theme provider.
+- Dates: `moment` (in `package.json`) + `date-fns`. → `date-fns` only.
+- Lockfiles: `bun.lockb` + `package-lock.json`. → one.
+- CSV: `src/lib/csv.ts` (Blob, correct) + `src/lib/exportUtils.ts` (data URI, truncates on `#`).
+  → `platform/export`.
+- Auth HTTP: `src/context/AuthContext.tsx` re-implements `safeJson` / `requireDirectusUrl` /
+  `directusRequest` instead of importing them from `src/lib/directus.ts`.
+- Geo normalisation: `normalizePlaceName`, `dedupePlaceNames`, `toTitleCase`, `toSentenceCase` in
+  `src/lib/utils.ts`, **and** per-page copies in `Districts.tsx`, `Households`, `AddUser.tsx`,
+  `EditUser.tsx`. → one `core/lib/strings.ts`.
 
 ### 4.7 Duplicated helpers
 
-<!-- PENDING: step 4 -->
+Measured with a whole-tree definition grep, not a heuristic:
+
+| Helper | Definitions | Where | Rebuild home |
+| --- | --- | --- | --- |
+| `pickValue(record, keys)` (first non-empty value from a list of possible field names) | **14** | `GlobalSearch.tsx:83`, `RecentActivity.tsx:30`, `services/service-records.ts:201`, `Flags.tsx:106`, `HTSRegister.tsx:70`, `HouseholdArchivedRegister.tsx:75`, `HouseholdRegister.tsx:61`, `HouseholdServicesPage.tsx:102`, + 6 more | **Never in UI code.** Each module's `api/schemas.ts` normaliser resolves field names once (CLAUDE.md "Data rules") |
+| `formatDate` | **10** | `DuplicateDetectionCard.tsx:32`, `RecentActivity.tsx:45`, `QualityReviewPanel.tsx:64`, `ServicesPage.tsx:154`, `constants/utils.ts:58`, `DataPipelinePage.tsx:420`, `MotherIndexDetails.tsx:21`, + 3 more | `core/lib/format.ts` |
+| `safeJson(response)` | **3** | `src/lib/api.ts:18`, `src/lib/directus.ts:13`, `src/context/AuthContext.tsx:36` | `core/api/http.ts` |
+| `requireDirectusUrl()` | **2** | `src/lib/directus.ts:5`, `src/context/AuthContext.tsx:44` | `core/api/http.ts` |
+| `downloadCsv(...)` | **2**, incompatible signatures | `src/lib/csv.ts:18`, `src/lib/exportUtils.ts:14` | `platform/export` |
+| `getListValue` (unwrap an arbitrary list response) | 1 shared + per-page `data?.data ?? []` fallbacks | `src/lib/api.ts:116-183` | zod schema per endpoint |
+| `isAdmin` / `isDistrictUser` / `isProvincialUser` | **8 rule sites** | see 4.4 | `core/access/derive-access.ts` |
+| CSV column escaping | 2 | both CSV helpers | `platform/export` |
+| Place-name normalisation | 4+ | `src/lib/utils.ts` + `Districts.tsx`, `AddUser.tsx`, `EditUser.tsx` | `core/lib/strings.ts` |
+| Pagination state (`currentPage`, `ITEMS_PER_PAGE`, reset-on-filter) | ~20 pages | every register | `platform/data-table` |
+
+The rebuild target is **one** definition of each. If a helper exists in two modules, it belongs in
+`core/lib` or `platform/`; if it mentions a domain concept, it belongs in the module (CLAUDE.md).
+
 
 ## 5. Verification of MIGRATION_PLAN.md section 2
 
-<!-- PENDING: step 4 -->
+Every finding in `MIGRATION_PLAN.md` §2 was checked against the source. "Confirmed" means the code
+does what the plan says; the file/line references are the evidence, and each finding also appears in
+the module audit that has to fix it.
+
+### 5.1 Security findings
+
+| # | Finding | Verdict | Evidence | Fixed by |
+| --- | --- | --- | --- | --- |
+| **S1** | Superset service-account credentials are `VITE_*` variables compiled into the bundle; RLS built in the browser | **Confirmed as described, already addressed** | `src/lib/superset.ts:1-7` states that guest tokens now come from `POST /superset/guest-token` and **no Superset credentials are shipped**; the remaining `VITE_SUPERSET_*` variable is the dashboard domain only. The pre-patch code is what the plan describes | Phase 0 (patched), then `core/api` must send the token on every call; `analytics` module uses the backend token endpoint |
+| **S2** | Page access only hidden in the sidebar; `/users`, `/users/new`, `/data-pipeline` have no permission guard | **Confirmed** | `src/App.tsx:414,430,438` (`/users*`) and the Data Pipeline route use `<ProtectedRoute>` only; `src/components/auth/ProtectedRoute.tsx:8-19` checks authentication and password change, never a role | `core/access` + route-level permissions in module manifests |
+| **S3** | Sidebar compares the section label `"Data Pipeline"` but the section is labelled `"Data pipeline"`, so the section always shows | **Confirmed** | `src/components/dashboard/AppSidebar.tsx:98` vs `:172` | Shell builds nav from manifests + permissions |
+| **S4** | Roles/scope inferred from free-text `description`/`title`/`location`; sidebar and `useEffectiveDistrict` disagree on who is an admin | **Confirmed, and worse than stated** — eight rule sites, not two | §4.4 above | `core/access/derive-access.ts`, one function, one test per role; backend ask #3 |
+| **S5** | Logout clears the token but not the React Query cache or the IndexedDB cache, leaving PII on disk for the next user | **Confirmed** | `src/lib/auth.ts:40` removes only `ecap.access_token`; the persister at `src/App.tsx:140-161` keeps `ecap-plus-pmp-react-query` for 24 h (`gcTime`), and nothing clears it on logout | `core/auth/logout()` wipes the query cache, the persisted cache, and every namespaced key in §4.2 |
+| **S6** | Access token in `localStorage`, no refresh flow, abrupt logout on expiry | **Confirmed** | `src/lib/auth.ts:1,20,31`; `AuthContext` has no refresh call; the DQA middleware answers 401 on expiry (AUDIT §3.1.2) | `core/api` refresh-once-then-logout; backend ask #6 (refresh tokens or cookie mode) |
+| **S7** | `.env` holds `VITE_GROQ_API_KEY` and Directus CORS settings that do not belong in a frontend env file | **Confirmed by name only** | The `.env` file is git-ignored and absent from this tree; §4.5 lists the variable inventory that survives. `vite.config.ts:7` ships every `REACT_*` variable too | `env.ts` zod schema; no secrets in `VITE_*` (CLAUDE.md rule 5) |
+| **S8** | Backend: the token middleware was attached to no route | **Confirmed as patched; the patch is not in this tree** | `backend:index.js` mounts `verifyDirectusToken` globally, but the local `middleware/verifyDirectusToken.js` is the plain version with **no `AUTH_MODE`** — see `docs/audit/_SOURCE_BASELINE.md` | Phase 0 rollout; the new frontend must always send the token |
+| **S9** | Backend: endpoints trust the `district` parameter; the HTS register ignores district entirely | **Confirmed** | AUDIT §3.2 summary: 35 of 69 endpoints trust a caller-supplied district, 7 ignore it, 10 are by-ID with no scope check; `/household/hts-register-by-district` ignores `district` (`backend:controllers/householdController.js:418-441`) | Backend ask #2; until then the frontend must not rely on it |
+
+### 5.2 Structural findings
+
+| Finding | Verdict | Evidence |
+| --- | --- | --- |
+| Monolithic API files (`lib/api.ts` ≈1,480 lines, `lib/directus.ts` ≈870) with defensive shape-guessing | **Confirmed** | `src/lib/api.ts` is 1,486 lines and `getListValue` alone (`:116-183`) tries ~12 field names; `src/lib/directus.ts` is 869 lines |
+| Giant pages: `DataPipelinePage` 2,288, `HouseholdProfile` 1,964, `VcaProfile` 1,807, `HTSRegister` 1,271, `ServicesPage` 1,254, `PMTCTRegister` 1,148 | **Confirmed** | `wc -l` on each file matches these numbers exactly |
+| `pickValue` defined 14 times, `formatDate` 8 times | **Confirmed for `pickValue` (14); `formatDate` is actually 10** | §4.7 |
+| Every register re-implements fetching, filtering, pagination and CSV/PDF export by hand; 23 pages build raw shadcn tables; nothing virtualised | **Confirmed** | No `@tanstack/react-table` import anywhere in `src`; every register has its own `currentPage` state and its own `downloadCsv` call |
+| Detail pages depend on `location.state` / `sessionStorage` for the record id | **Confirmed** | Household, VCA, HTS, PMTCT, Mother Index and the three service profiles all read the record from router state; see each module's "Links in / out" |
+| TypeScript not strict, heavy `any` in profile pages | **Confirmed** | `tsconfig.app.json` has `strict: false`, `noImplicitAny: false` |
+| Branding hardcoded in ~50 files | **Confirmed: 52 files** | §4.1 |
+| Geography and sub-population lists hardcoded | **Confirmed** | `src/constants/districts.ts`; three divergent sub-population lists (§4.1) |
+| Two toast systems, two theme systems, two date libraries, two lockfiles | **Confirmed** | §4.6 "Two of everything" |
+| Polling everywhere (notifications 30 s, calendar 30 s, ETL freshness), permission requested on load | **Confirmed, and worse** — chat polls at 3 s and nothing but two pollers pauses when hidden | §4.3 |
+| Production served with `vite preview` under pm2 | **Confirmed** | `ecosystem.config.cjs` / `ecosystem.staging.config.cjs` run a preview server |
+| Tests: one placeholder test | **Confirmed** | `src/test/example.test.ts` is `expect(true).toBe(true)` |
+
+### 5.3 Global search (plan §2.3)
+
+| Claim | Verdict | Evidence |
+| --- | --- | --- |
+| Downloads the entire VCA and household list for the district when the dialog opens | **Confirmed** | `src/components/dashboard/GlobalSearch.tsx` reuses the register queries, which are unbounded (`SELECT DISTINCT *` with no LIMIT, AUDIT §3.2) |
+| Renders only the first 10 of each, and cmdk filters only what is rendered | **Confirmed** | The results are sliced to 10 before being handed to cmdk, and cmdk's own filtering then applies to that slice — so most records can never be found |
+| The navigation list is a hand-maintained copy of the sidebar and already stale | **Confirmed** | `GlobalSearch.tsx:34-45` has a literal nav array; it omits registers, services, performance, calendar, referrals and support |
+
+### 5.4 Dead or questionable code (plan §2.4)
+
+All confirmed; the full inventory is §4.6. One correction: the plan lists
+`pages/VcaServicesDashboard.tsx` as unreferenced (true) but does **not** mention that
+`src/pages/HouseholdServicesPage.tsx` is routed yet unlinked, which matters because decision 3 says to
+keep it.
+
+### 5.5 Good ideas worth keeping (plan §2.5)
+
+All present and worth porting as described: the query defaults and persister (`src/App.tsx:112-161`),
+`lazyWithRetry` + chunk boundary (`src/lib/lazyWithRetry.ts`, `src/App.tsx:167-211`), `EtlInvalidator`
+(`src/components/EtlInvalidator.tsx`), the FY filter design (`src/lib/fiscalYear.ts`,
+`src/context/FyFilterContext.tsx`, `FY_FILTER_REVIEW.md`), the config-driven `ServicesPage`, and the
+Cmd/Ctrl+K palette. Two caveats for the port: `EtlInvalidator` invalidates **every** query rather than
+only ETL-backed ones, and the FY filter is in several query keys but never sent to the API.
+
 
 ## 6. Surprises
 
-<!-- PENDING: step 4 -->
+Findings that were **not** in `MIGRATION_PLAN.md` and that change what a later phase builds.
+Ordered by blast radius. Each links to the module audit that owns it.
+
+1. **The audit's own source tree is not the tree in this workspace.** The `security-fix` backend files
+   (`lib/userScope.js`, `supersetController.js`, `geography.js`, `.env.example`) are missing, and the
+   local `middleware/verifyDirectusToken.js` is the *pre-patch* version, so its behaviour (no
+   `AUTH_MODE`, no public routes, no misconfiguration branch) contradicts §3.1.2. See
+   `docs/audit/_SOURCE_BASELINE.md`. **Nothing in the plan changes**, but nobody should "fix" the new
+   frontend to match the local middleware.
+
+2. **`/referrals` cannot work.** Both endpoints it calls (`/household/district/caregiver-referrals`,
+   `/child/district/vcareferrals`) do not exist; the fallback filters service rows that carry no
+   referral fields. The page is effectively empty in production. It needs a backend endpoint
+   (`docs/audit/referrals.md`, backend asks). **This is the one module that cannot reach parity
+   without backend work.**
+
+3. **A nationwide cache of beneficiary data sits in `localStorage`.** `ecap_cache_nationwide_household_list`
+   and `ecap_cache_nationwide_vca` (`src/lib/api.ts:81,292`) hold whole-register responses, on top of the
+   24 h IndexedDB React Query cache. Neither is cleared on logout. This is a larger S5 than the plan
+   describes and drives the "logout wipes everything" requirement in §4.2.
+
+4. **`VITE_DEFAULT_DISTRICT` silently gives unscoped users a district's data.** `src/lib/api.ts:7`
+   plus `useEffectiveDistrict` (`:11`) mean a user with no `location` and no province gets the default
+   district instead of an error. The backend does the opposite (deny). The rebuild must remove the
+   variable (§4.5) and show "no data scope assigned".
+
+5. **Chat is Directus notifications, not a chat API.** Two ad-hoc collections (`support_chat`,
+   `support_chat_outbox`), a 500-row hard cap, `item` doubling as a file id and a partner id, priority
+   stored in `subject`, and a 3 s poll. `docs/audit/support.md` proposes a real table as a backend ask.
+
+6. **Two registers are unfiltered national downloads.** `/household/all-households` and
+   `/child/vcas-assessed-register` have no `ORDER BY` and no `LIMIT`; with `All` they return the whole
+   national register in one JSON response. At the stated 260,000 records (`PROGRESS.md` decision 8)
+   that is not viable, so the households pilot needs to decide between server pagination (backend ask
+   #8) and a hard cap plus client-side paging. Phase 4 must not assume the client can hold the register.
+
+7. **The FY filter is decorative in most modules.** It is in the query key but not the request for
+   referrals, and the backend ignores `from`/`to` on 8 endpoints (facility/caseworker/service
+   performance, service timeseries and distribution, the mother register and both PMTCT registers).
+   Phase 5 must check per endpoint whether FY actually does anything (`AUDIT.md` §3.2 `FY` column).
+
+8. **`HouseholdServicesPage` is routed but unlinked** (`src/App.tsx:374`), and the sidebar's
+   "Household Services" points at a *different* route (`/household-services`, `AppSidebar.tsx:79`).
+   Decision 3 keeps it; `docs/audit/services.md` asks which URL survives.
+
+9. **The training log is entirely mock** and its adapter is the only caller of
+   `src/constants/mockData.ts`. Keeping it behind a flag is right, but the flag must default to
+   **off in production**, or "Test data" badges will appear in a live deployment.
+
+10. **`moment` survives in exactly two files, for one job.** `HouseholdProfile.tsx:55,101-116` and
+    `VcaProfile.tsx:17,143-158` use it only to parse a date that may be ISO or `DD-MM-YYYY`: six
+    explicit formats with strict parsing, then a loose `moment(String(value))` fallback. `date-fns`
+    cannot parse `DD-MM-YYYY` without an explicit format, so the port needs one `parseLooseDate()` in
+    `core/lib/format.ts` carrying that exact six-format list and a unit test per format — after which
+    `moment` (a 290 KB dependency) is gone. Do **not** swap in `new Date()`: it silently mis-parses
+    `02-12-2026`.
+    The ambiguity is real, not theoretical: `DD/MM/YYYY` **and** `MM/DD/YYYY` are both in the list, so
+    `03/04/2026` parses as 3 April because the first match wins. Keep that order and document it.
+
+11. **The AI assistant's system prompt names districts outside the programme** (`Lusaka`, `Ndola`,
+    `src/lib/ai-service.ts:37`) and grants itself the ability to rewrite UI colours via a JSON command
+    block (`:57-70`), which `ThemeContext` then applies and **persists in `localStorage`**. So the
+    assistant can permanently change a user's colour scheme. Phase 5 should either drop the colour
+    feature or gate it.
+
+12. **Three different sub-population vocabularies** (household register, VCA register, AI prompt) with
+    disagreeing labels for the same keys (`CALHIV` vs `C/ALHIV`, `CWLHIV` vs `C/WLHIV`). **Resolved
+    2026-11-03: unify** on 14 keys and the unprefixed labels, with `dataKey` and `registers` fields to
+    preserve the legacy mapping and per-screen visibility (§4.1 item 5). Open sub-question for Phase 4:
+    the seven long-form `child_adolescent_in_*` columns the VCA register reads are **not in the backend
+    source**, so confirm they exist on `children` before relying on them.
+
+13. **`/districts` is reachable by district users** even though the sidebar hides it, and it fires
+    national count and register queries. It is the clearest example of the S2 class: hiding a nav item
+    is not access control.
+
+14. **`notifyUsersOfFlag` e-mails nothing** — it writes Directus notifications to every user whose
+    **role name** contains `administrator`, `supervisor`, `qa`, `data quality` or `manager`
+    (`src/lib/directus.ts:640-654`). With the free-text role model, a misspelled role name means no
+    one is notified, silently.
+
 
 ## 7. Test fixtures index
 
-<!-- PENDING: step 5 -->
+Every fixture is a JSON file under `test/fixtures/`. **Test-only:** they are used by the MSW
+handlers in unit and page tests and by the CI Playwright run. They are never imported by
+`pnpm dev`, never bundled, and never replace a real endpoint (`MIGRATION_PLAN.md` §0).
+
+Regenerate with `python3 scripts/draft-fixtures.py`; verify with `--check` (used by `pnpm check`
+in Phase 2). Regeneration is deterministic, so a clean re-run produces no diff.
+
+**Provenance.** Every fixture was drafted from the response envelope and field table in §3.2
+(69 DQA endpoints) or §3.3 (Directus), not from live data. Names, IDs, phone numbers, dates and
+facility names are invented; **field names, JSON types and nullability are the API contract and are
+preserved exactly**, including the quirks the catalogue records: `COUNT()` values are bigints
+serialised as *strings*, `/mother/total/count` returns a *number*, text date columns are
+`DD-MM-YYYY`, and `SELECT *` endpoints carry the full column set the backend SQL references.
+
+**17 files, 101 endpoint keys.**
+
+| File | Keys | Size | Contains |
+| --- | --- | --- | --- |
+| `directus-users.json` | 21 | 10 KB | Auth login/refresh shape, `/users/me`, user list, single user, roles, notifications, activity feed, the two flag collections, weekly extracts, file upload/asset, and `#role-patterns` - one fixture user per legacy role pattern from §4.4 (district, province, admin, support, lowercase admin, no description with a role, unscoped) |
+| `dqa-agent.json` | 2 | 1 KB | Assistant reply and health check |
+| `dqa-caregiver.json` | 8 | 10 KB | Caregiver services (by household, by district, by month), referrals (by household and by month), case plans, case-plan domains, and an empty-array case |
+| `dqa-errors.json` | 2 | 1 KB | `GET /` (logo bytes) and the `ALL *` JSON 404 |
+| `dqa-etl-caseworkers.json` | 2 | 5 KB | GPS journey events and the caseworker list |
+| `dqa-etl-dqa.json` | 5 | 5 KB | Facility/ward list, duplicate groups, the 18 DQA check counts, failing records, action queue |
+| `dqa-etl-duplicate-reviews.json` | 3 | 1 KB | List, upsert and delete of duplicate-review marks |
+| `dqa-etl-performance.json` | 3 | 3 KB | Facility, caseworker and service performance |
+| `dqa-etl-pipeline.json` | 12 | 4 KB | Last success timestamp, pipeline list, file listing, run list and detail, run/cancel/report actions, download and SSE placeholders, tablet sync |
+| `dqa-etl-service-records.json` | 3 | 5 KB | Paginated service records with stats, single record detail, CSV stream placeholder |
+| `dqa-etl-services-summary.json` | 3 | 1 KB | Service KPIs, 12-month timeseries, 90-day distribution |
+| `dqa-households.json` | 7 | 27 KB | Household count, active and archived registers, the unfiltered members register, `/household/members`, household services, plus the 500-error body |
+| `dqa-hts.json` | 1 | 3 KB | HTS register rows |
+| `dqa-mothers.json` | 7 | 5 KB | Mother index register (plain and `/filtered`), the four count routes - including the two that are unreachable or shadowed by route order |
+| `dqa-pmtct.json` | 2 | 4 KB | PMTCT child (HEI) and mother registers |
+| `dqa-superset.json` | 9 | 1 KB | Guest-token success plus all eight documented failure bodies (not configured, missing/expired token, log-mode with no user, unknown dashboard, missing id, no scope, upstream failure) |
+| `dqa-vcas.json` | 11 | 24 KB | VCA count, active and archived registers, the broken `/child/vca-profile` (always empty), services, referrals, case plans, domains, monthly rollups |
+
+### Conventions
+
+- **Keys are the audit's keys**: `"<METHOD> <path>"` exactly as the endpoint appears in §3.2,
+  so an MSW handler can look a fixture up without a translation table.
+- **`#suffix` keys are extra cases**, not separate endpoints: `#empty`, `#not-found`,
+  `#no-scope`, `#shadowed`, and the `#vca` type variants for the parametrised `/etl/services/:type/*`.
+  A handler looks up the exact key first, then the base path.
+- **`<... stream>` placeholders** (`dqa-etl-pipeline`, `dqa-etl-service-records`, `dqa-errors`)
+  mark responses that are binary or streamed (CSV, SSE, JPEG). MSW returns them as `text/plain`
+  bodies containing the marker; tests that need real content build it inline.
+- **`directus-users.json` is one file, not eight.** It covers all 29 Directus operations from §3.3
+  in one lookup, mirroring how `core/api/directus` will be tested.
+
+### What is deliberately *not* fixtured
+
+- **Live-backend assumptions.** No fixture contains a real Directus token, `DIRECTUS_SECRET`, a
+  Superset credential or a real user. The JWT-shaped strings are obviously fake (`FIXTURE.signature`).
+- **Patient-level detail beyond field names.** Rows carry enough variety to exercise every column
+  the audit says a page renders, and nothing more.
+- **The eight distinct sub-population vocabularies.** Fixtures carry the union of the flag columns
+  (`calhiv` … `pbfw`); which ones a given screen reads is decided by `programConfig.subPopulations`
+  in Phase 2, not by the fixture.
 
 ## 8. Appendix: legacy file → module map
 
-<!-- PENDING: step 3 -->
+Generated by `scripts/build-file-map.py` from the `Legacy files` table of every
+`docs/audit/<module>.md`. One row per legacy source file, with every module that audits it.
+A file listed against several modules is shared: the first module to port it owns the shared
+helper, the others import it from `core/` or `platform/` (see `CLAUDE.md` layering rules).
+Backend files appear where a module's behaviour depends on a handler.
+
+| Legacy file | Length | Audited in |
+| --- | --- | --- |
+| `src/App.tsx` | 602 | `account`, `analytics`, `assistant`, `auth`, `calendar`, `caregivers`, `caseworkers`, `dashboard`, `data-pipeline`, `districts`, `docs`, `flags`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `referrals`, `services`, `shell`, `support`, `training-log`, `users`, `vcas` |
+| `src/components/AnimatedCounter.tsx` | 59 | `dashboard`, `districts`, `shell` |
+| `src/components/EmptyState.tsx` | 51 | `districts`, `households`, `hts`, `services`, `shell`, `support` |
+| `src/components/EtlInvalidator.tsx` | 90 | `auth`, `caregivers`, `dashboard`, `data-pipeline`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `services`, `shell`, `vcas` |
+| `src/components/FyFilter.tsx` | 229 | `shell` |
+| `src/components/LoginCard.tsx` | 179 | `auth` |
+| `src/components/MultiFacilityPicker.tsx` | 174 | `shell`, `users` |
+| `src/components/NavLink.tsx` | 28 | `shell` |
+| `src/components/RightImageSlider.tsx` | 73 | `auth` |
+| `src/components/TraineeRecordModal.tsx` | 285 | `training-log` |
+| `src/components/VersionFooter.tsx` | 27 | `auth`, `shell` |
+| `src/components/aceternity/AuroraBackground.tsx` | 30 | `auth` |
+| `src/components/aceternity/GlowCard.tsx` | 37 | `auth`, `dashboard`, `districts`, `performance`, `services` |
+| `src/components/aceternity/GlowHeader.tsx` | 25 | `auth`, `shell` |
+| `src/components/aceternity/LoadingDots.tsx` | 17 | `auth`, `dashboard`, `districts`, `hts`, `performance`, `services` |
+| `src/components/aceternity/LoadingScreen.tsx` | 34 | `auth` |
+| `src/components/aceternity/SpotlightCard.tsx` | 22 | `auth` |
+| `src/components/aceternity/Title.tsx` | 22 | `auth` |
+| `src/components/auth/ProtectedRoute.tsx` | 23 | `account`, `analytics`, `assistant`, `auth`, `calendar`, `caregivers`, `caseworkers`, `dashboard`, `data-pipeline`, `districts`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `referrals`, `services`, `shell`, `support`, `training-log`, `users`, `vcas` |
+| `src/components/chat/CallOverlay.tsx` | 188 | `support` |
+| `src/components/chat/EmojiPicker.tsx` | 94 | `support` |
+| `src/components/chat/FileAttachment.tsx` | 93 | `support` |
+| `src/components/chat/ProfilePictureModal.tsx` | 194 | `account`, `support` |
+| `src/components/chat/VoiceRecorder.tsx` | 119 | `support` |
+| `src/components/dashboard/ActionQueueBanner.tsx` | 103 | `dashboard` |
+| `src/components/dashboard/AiAssistant.tsx` | 398 | `assistant` |
+| `src/components/dashboard/AppSidebar.tsx` | 346 | `account`, `analytics`, `auth`, `calendar`, `caregivers`, `caseworkers`, `dashboard`, `data-pipeline`, `districts`, `docs`, `flags`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `referrals`, `services`, `shell`, `support`, `training-log`, `users`, `vcas` |
+| `src/components/dashboard/CalendarWidget.tsx` | 91 | `calendar`, `dashboard` |
+| `src/components/dashboard/CanonicalKpiStrip.tsx` | 161 | `dashboard`, `services` |
+| `src/components/dashboard/ConfirmDialog.tsx` | 55 | `shell`, `users` |
+| `src/components/dashboard/DashboardHeader.tsx` | 539 | `analytics`, `auth`, `calendar`, `caregivers`, `dashboard`, `data-pipeline`, `districts`, `docs`, `households`, `hts`, `services`, `shell`, `support` |
+| `src/components/dashboard/DashboardLayout.tsx` | 110 | `analytics`, `assistant`, `calendar`, `caregivers`, `dashboard`, `districts`, `flags`, `households`, `hts`, `services`, `shell`, `support`, `training-log`, `users`, `vcas` |
+| `src/components/dashboard/DataQualityChart.tsx` | 323 | `dashboard` |
+| `src/components/dashboard/DuplicateDetectionCard.tsx` | 489 | `dashboard`, `services` |
+| `src/components/dashboard/EmbeddedDashboard.tsx` | 144 | `analytics` |
+| `src/components/dashboard/GlobalSearch.tsx` | 212 | `account`, `analytics`, `auth`, `calendar`, `caregivers`, `caseworkers`, `dashboard`, `data-pipeline`, `districts`, `docs`, `flags`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `referrals`, `services`, `shell`, `support`, `training-log`, `users`, `vcas` |
+| `src/components/dashboard/MetricsGrid.tsx` | 252 | `caseworkers`, `dashboard`, `households`, `vcas` |
+| `src/components/dashboard/MobileBottomNav.tsx` | 52 | `account`, `analytics`, `auth`, `calendar`, `caregivers`, `caseworkers`, `dashboard`, `data-pipeline`, `districts`, `docs`, `flags`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `referrals`, `services`, `shell`, `support`, `training-log`, `users`, `vcas` |
+| `src/components/dashboard/PageIntro.tsx` | 37 | `shell` |
+| `src/components/dashboard/ProvincialBreakdown.tsx` | 71 | `dashboard` |
+| `src/components/dashboard/RecentActivity.tsx` | 306 | `dashboard`, `flags` |
+| `src/components/dashboard/ServiceInsights.tsx` | 759 | `dashboard` |
+| `src/components/dashboard/SubPopulationFilter.tsx` | 67 | `households`, `shell`, `vcas` |
+| `src/components/dashboard/WelcomeBanner.tsx` | 92 | `auth`, `calendar`, `dashboard`, `flags` |
+| `src/components/dashboard/services/CohortStrip.tsx` | 82 | `services` |
+| `src/components/dashboard/services/QualityReviewPanel.tsx` | 350 | `dashboard`, `services` |
+| `src/components/dashboard/services/ServicesDistributionChart.tsx` | 99 | `services` |
+| `src/components/dashboard/services/ServicesPage.tsx` | 1254 | `caregivers`, `services` |
+| `src/components/dashboard/services/ServicesPageHeader.tsx` | 160 | `services` |
+| `src/components/dashboard/services/ServicesTimeSeriesChart.tsx` | 82 | `services` |
+| `src/components/dashboard/services/service-records.ts` | 374 | `services` |
+| `src/components/ui/avatar.tsx` | — | `support` |
+| `src/components/ui/sonner.tsx` | 27 | `shell` |
+| `src/components/ui/use-toast.ts` | 3 | `shell` |
+| `src/constants/api.ts` | 29 | `training-log` |
+| `src/constants/districts.ts` | 8 | `hts`, `shell` |
+| `src/constants/mockData.ts` | 384 | `training-log` |
+| `src/constants/pdf.ts` | 215 | `shell`, `training-log` |
+| `src/constants/types.ts` | 96 | `shell`, `training-log` |
+| `src/constants/utils.ts` | 235 | `shell`, `training-log` |
+| `src/context/AuthContext.tsx` | 150 | `account`, `analytics`, `auth`, `dashboard`, `support` |
+| `src/context/FyFilterContext.tsx` | 122 | `caregivers`, `dashboard`, `districts`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `referrals`, `services`, `shell`, `vcas` |
+| `src/context/ThemeContext.tsx` | 106 | `assistant`, `shell` |
+| `src/data/documentationArticles.ts` | 165 | `docs`, `hts` |
+| `src/data/supportData.tsx` | 110 | `docs`, `support` |
+| `src/hooks/use-mobile.tsx` | 19 | `shell` |
+| `src/hooks/use-toast.ts` | 186 | `shell` |
+| `src/hooks/useCalendarNotifications.ts` | 61 | `calendar`, `shell` |
+| `src/hooks/useEffectiveDistrict.ts` | 18 | `account`, `analytics`, `auth`, `calendar`, `caregivers`, `caseworkers`, `dashboard`, `data-pipeline`, `districts`, `docs`, `flags`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `referrals`, `services`, `shell`, `support`, `training-log`, `users`, `vcas` |
+| `src/hooks/useWebRTC.ts` | 224 | `support` |
+| `src/lib/ai-service.ts` | 173 | `assistant` |
+| `src/lib/api.ts` | 1486 | `caregivers`, `caseworkers`, `dashboard`, `data-pipeline`, `districts`, `docs`, `flags`, `households`, `hts`, `mother-index`, `performance`, `pmtct`, `referrals`, `services`, `users`, `vcas` |
+| `src/lib/auth.ts` | 41 | `analytics`, `auth` |
+| `src/lib/csv.ts` | 29 | `hts`, `mother-index`, `pmtct`, `referrals`, `services`, `shell`, `training-log` |
+| `src/lib/data-validation.ts` | 70 | `caregivers`, `caseworkers`, `households`, `services`, `shell`, `vcas` |
+| `src/lib/directus.ts` | 869 | `account`, `auth`, `calendar`, `dashboard`, `data-pipeline`, `flags`, `households`, `support`, `users`, `vcas` |
+| `src/lib/env.ts` | 17 | `analytics`, `assistant`, `auth`, `users` |
+| `src/lib/exportUtils.ts` | 29 | `districts`, `hts`, `shell` |
+| `src/lib/fiscalYear.ts` | 84 | `caregivers`, `districts`, `hts`, `performance`, `services`, `shell` |
+| `src/lib/indexedDbCache.ts` | 92 | `households`, `referrals`, `services`, `shell`, `vcas` |
+| `src/lib/lazyWithRetry.ts` | 62 | `shell` |
+| `src/lib/sounds.ts` | 51 | `assistant`, `shell`, `support` |
+| `src/lib/superset.ts` | 44 | `analytics` |
+| `src/lib/utils.ts` | 64 | `caregivers`, `caseworkers`, `dashboard`, `districts`, `households`, `hts`, `mother-index`, `referrals`, `services`, `shell`, `users`, `vcas` |
+| `src/main.tsx` | 5 | `shell` |
+| `src/pages/AcceptInvite.tsx` | 199 | `auth` |
+| `src/pages/AddUser.tsx` | 848 | `users` |
+| `src/pages/Calendar.tsx` | 886 | `calendar`, `dashboard` |
+| `src/pages/CaregiverRiskRegister.tsx` | 387 | `caregivers` |
+| `src/pages/CaregiverServiceProfile.tsx` | 267 | `services` |
+| `src/pages/CaregiverServices.tsx` | 11 | `caregivers`, `services` |
+| `src/pages/CaseworkerJourneys.tsx` | 934 | `caseworkers` |
+| `src/pages/CaseworkerProfile.tsx` | 496 | `caseworkers` |
+| `src/pages/ChangePassword.tsx` | 221 | `auth` |
+| `src/pages/Charts.tsx` | 119 | `analytics` |
+| `src/pages/Dashboard.tsx` | 135 | `caseworkers`, `dashboard`, `data-pipeline`, `flags`, `performance`, `services` |
+| `src/pages/DataPipelinePage.tsx` | 2288 | `data-pipeline` |
+| `src/pages/Districts.tsx` | 585 | `districts`, `households` |
+| `src/pages/Documentation.tsx` | 445 | `docs` |
+| `src/pages/DocumentationArticle.tsx` | 104 | `docs` |
+| `src/pages/EditUser.tsx` | 543 | `users` |
+| `src/pages/FlaggedRecordForm.tsx` | 240 | `flags`, `households` |
+| `src/pages/Flags.tsx` | 475 | `dashboard`, `flags` |
+| `src/pages/ForgotPassword.tsx` | 146 | `auth` |
+| `src/pages/HTSProfile.tsx` | 443 | `hts` |
+| `src/pages/HTSRegister.tsx` | 1271 | `hts` |
+| `src/pages/HTSRiskRegister.tsx` | 353 | `hts` |
+| `src/pages/HouseholdArchivedRegister.tsx` | 785 | `households` |
+| `src/pages/HouseholdProfile.tsx` | 1964 | `caregivers`, `flags`, `households`, `vcas` |
+| `src/pages/HouseholdRegister.tsx` | 612 | `districts`, `households` |
+| `src/pages/HouseholdRiskRegister.tsx` | 405 | `households` |
+| `src/pages/HouseholdServiceProfile.tsx` | 216 | `services` |
+| `src/pages/HouseholdServices.tsx` | 11 | `households`, `services` |
+| `src/pages/HouseholdServicesPage.tsx` | 336 | `services` |
+| `src/pages/Index.tsx` | 49 | `auth` |
+| `src/pages/MotherIndexDetails.tsx` | 264 | `mother-index`, `vcas` |
+| `src/pages/MotherIndexRegister.tsx` | 326 | `mother-index` |
+| `src/pages/NotFound.tsx` | 24 | `auth`, `shell` |
+| `src/pages/PMTCTProfile.tsx` | 175 | `pmtct` |
+| `src/pages/PMTCTRegister.tsx` | 1148 | `pmtct` |
+| `src/pages/Performance.tsx` | 697 | `performance` |
+| `src/pages/Profile.tsx` | 287 | `account`, `auth` |
+| `src/pages/Referrals.tsx` | 552 | `referrals` |
+| `src/pages/ResetPassword.tsx` | 169 | `auth` |
+| `src/pages/SupportCenter.tsx` | 884 | `support` |
+| `src/pages/TrainingLog.tsx` | 510 | `training-log` |
+| `src/pages/Users.tsx` | 566 | `users` |
+| `src/pages/VcaArchivedRegister.tsx` | 893 | `vcas` |
+| `src/pages/VcaProfile.tsx` | 1807 | `flags`, `vcas` |
+| `src/pages/VcaRegister.tsx` | 686 | `vcas` |
+| `src/pages/VcaRiskRegister.tsx` | 396 | `services`, `vcas` |
+| `src/pages/VcaServiceProfile.tsx` | 250 | `services` |
+| `src/pages/VcaServices.tsx` | 11 | `services` |
+| `src/pages/VcaServicesDashboard.tsx` | 954 | `services`, `vcas` |
+| `FY_FILTER_REVIEW.md` | 249 | `shell` |
+| `index.html` | 38 | `shell` |
+| `scripts/setup-calendar-collection.mjs` | 213 | `calendar` |
+| `vite.config.ts` | 56 | `shell` |
