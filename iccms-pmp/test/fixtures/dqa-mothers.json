@@ -1,0 +1,208 @@
+{
+  "GET /mother/total/count": {
+    "status": "success",
+    "count": 1625
+  },
+  "GET /mother/count/:district(*)": {
+    "status": "success",
+    "count": 249
+  },
+  "GET /mother/members-count/:district(*)": {
+    "status": "success",
+    "count": 73
+  },
+  "GET /mother/district/count/:district(*)": {
+    "status": "success",
+    "count": 132
+  },
+  "GET /mother/district/:district(*)": {
+    "status": "success",
+    "data": [
+      {
+        "household_id": "HH-00035",
+        "mother_id": "MI-00001",
+        "firstname": "Thandiwe",
+        "lastname": "Mulenga",
+        "district": "Choma",
+        "facility": "Serenje Health Post",
+        "date_enrolled": "04-07-2026",
+        "child_count": "2",
+        "age": "40"
+      },
+      {
+        "household_id": "HH-00001",
+        "mother_id": "MI-00002",
+        "firstname": "Chileshe",
+        "lastname": "Nyirenda",
+        "district": "Kapiri Mposhi",
+        "facility": "Monze Mission Clinic",
+        "date_enrolled": "03-07-2025",
+        "child_count": "4",
+        "age": "48"
+      },
+      {
+        "household_id": "HH-00016",
+        "mother_id": "MI-00003",
+        "firstname": "Lweendo",
+        "lastname": "Zulu",
+        "district": "Chibombo",
+        "facility": "Serenje Health Post",
+        "date_enrolled": "22-06-2026",
+        "child_count": "1",
+        "age": "23"
+      },
+      {
+        "household_id": "HH-00002",
+        "mother_id": "MI-00004",
+        "firstname": "Lweendo",
+        "lastname": "Nyirenda",
+        "district": "Choma",
+        "facility": "Kabwe General Hospital",
+        "date_enrolled": "17-08-2026",
+        "child_count": "1",
+        "age": "40"
+      },
+      {
+        "household_id": "HH-00037",
+        "mother_id": "MI-00005",
+        "firstname": "Chileshe",
+        "lastname": "Phiri",
+        "district": "Chisamba",
+        "facility": "Mazabuka Urban Clinic",
+        "date_enrolled": "05-11-2026",
+        "child_count": "2",
+        "age": "18"
+      },
+      {
+        "household_id": "HH-00027",
+        "mother_id": "MI-00006",
+        "firstname": "Chileshe",
+        "lastname": "Banda",
+        "district": "Chisamba",
+        "facility": "Mazabuka Urban Clinic",
+        "date_enrolled": "19-02-2026",
+        "child_count": "1",
+        "age": "48"
+      },
+      {
+        "household_id": "HH-00028",
+        "mother_id": "MI-00007",
+        "firstname": "Kondwani",
+        "lastname": "Banda",
+        "district": "Kabwe",
+        "facility": "Choma District Hospital",
+        "date_enrolled": "21-02-2025",
+        "child_count": "5",
+        "age": "19"
+      },
+      {
+        "household_id": "HH-00008",
+        "mother_id": "MI-00008",
+        "firstname": "Thandiwe",
+        "lastname": "Phiri",
+        "district": "Monze",
+        "facility": "Serenje Health Post",
+        "date_enrolled": "18-02-2025",
+        "child_count": "3",
+        "age": "40"
+      }
+    ]
+  },
+  "GET /mother/district/:district(*)/filtered": {
+    "status": "success",
+    "data": [
+      {
+        "household_id": "HH-00021",
+        "mother_id": "MI-00001",
+        "firstname": "Lweendo",
+        "lastname": "Banda",
+        "district": "Chisamba",
+        "facility": "Mazabuka Urban Clinic",
+        "date_enrolled": "05-04-2026",
+        "child_count": "3",
+        "age": "26"
+      },
+      {
+        "household_id": "HH-00015",
+        "mother_id": "MI-00002",
+        "firstname": "Mutinta",
+        "lastname": "Tembo",
+        "district": "Chibombo",
+        "facility": "Kabwe General Hospital",
+        "date_enrolled": "12-07-2025",
+        "child_count": "4",
+        "age": "48"
+      },
+      {
+        "household_id": "HH-00033",
+        "mother_id": "MI-00003",
+        "firstname": "Mutinta",
+        "lastname": "Tembo",
+        "district": "Serenje",
+        "facility": "Mazabuka Urban Clinic",
+        "date_enrolled": "28-09-2025",
+        "child_count": "1",
+        "age": "35"
+      },
+      {
+        "household_id": "HH-00016",
+        "mother_id": "MI-00004",
+        "firstname": "Bwalya",
+        "lastname": "Zulu",
+        "district": "Mumbwa",
+        "facility": "Kabwe General Hospital",
+        "date_enrolled": "28-07-2025",
+        "child_count": "4",
+        "age": "19"
+      },
+      {
+        "household_id": "HH-00021",
+        "mother_id": "MI-00005",
+        "firstname": "Twalumba",
+        "lastname": "Nyirenda",
+        "district": "Serenje",
+        "facility": "Kabwe General Hospital",
+        "date_enrolled": "23-01-2025",
+        "child_count": "3",
+        "age": "37"
+      },
+      {
+        "household_id": "HH-00024",
+        "mother_id": "MI-00006",
+        "firstname": "Thandiwe",
+        "lastname": "Mwale",
+        "district": "Choma",
+        "facility": "Monze Mission Clinic",
+        "date_enrolled": "08-05-2025",
+        "child_count": "2",
+        "age": "25"
+      },
+      {
+        "household_id": "HH-00004",
+        "mother_id": "MI-00007",
+        "firstname": "Mapalo",
+        "lastname": "Sakala",
+        "district": "Kabwe",
+        "facility": "Mukonchi Rural Health Centre",
+        "date_enrolled": "10-09-2026",
+        "child_count": "4",
+        "age": "37"
+      },
+      {
+        "household_id": "HH-00013",
+        "mother_id": "MI-00008",
+        "firstname": "Lweendo",
+        "lastname": "Chanda",
+        "district": "Kabwe",
+        "facility": "Kabwe General Hospital",
+        "date_enrolled": "10-07-2026",
+        "child_count": "5",
+        "age": "38"
+      }
+    ]
+  },
+  "GET /mother/district/count/:district(*)#shadowed": {
+    "status": "success",
+    "data": []
+  }
+}

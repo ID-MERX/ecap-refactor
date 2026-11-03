@@ -1,0 +1,156 @@
+{
+  "GET /etl/pmtct-child-register/:district": {
+    "status": "success",
+    "data": [
+      {
+        "hei_id": "PMTCT-00001",
+        "household_id": "HH-00030",
+        "firstname": "Kondwani",
+        "lastname": "Mulenga",
+        "district": "Monze",
+        "facility": "Mukonchi Rural Health Centre",
+        "date_enrolled": "18-08-2026",
+        "art_start_date": "07-06-2025",
+        "final_outcome": "Positive",
+        "age": "20"
+      },
+      {
+        "hei_id": "PMTCT-00002",
+        "household_id": "HH-00027",
+        "firstname": "Misozi",
+        "lastname": "Zulu",
+        "district": "Chibombo",
+        "facility": "Mazabuka Urban Clinic",
+        "date_enrolled": "28-06-2026",
+        "art_start_date": "13-06-2026",
+        "final_outcome": "Negative",
+        "age": "22"
+      },
+      {
+        "hei_id": "PMTCT-00003",
+        "household_id": "HH-00027",
+        "firstname": "Bwalya",
+        "lastname": "Nyirenda",
+        "district": "Kapiri Mposhi",
+        "facility": "Serenje Health Post",
+        "date_enrolled": "21-07-2025",
+        "art_start_date": "06-06-2026",
+        "final_outcome": "Unknown",
+        "age": "22"
+      },
+      {
+        "hei_id": "PMTCT-00004",
+        "household_id": "HH-00015",
+        "firstname": "Bwalya",
+        "lastname": "Phiri",
+        "district": "Choma",
+        "facility": "Mukonchi Rural Health Centre",
+        "date_enrolled": "10-10-2026",
+        "art_start_date": "15-11-2026",
+        "final_outcome": "Unknown",
+        "age": "12"
+      },
+      {
+        "hei_id": "PMTCT-00005",
+        "household_id": "HH-00032",
+        "firstname": "Mutinta",
+        "lastname": "Tembo",
+        "district": "Choma",
+        "facility": "Mukonchi Rural Health Centre",
+        "date_enrolled": "22-01-2026",
+        "art_start_date": "19-06-2025",
+        "final_outcome": "",
+        "age": "17"
+      },
+      {
+        "hei_id": "PMTCT-00006",
+        "household_id": "HH-00038",
+        "firstname": "Nchimunya",
+        "lastname": "Mwale",
+        "district": "Monze",
+        "facility": "Choma District Hospital",
+        "date_enrolled": "20-07-2026",
+        "art_start_date": "21-07-2026",
+        "final_outcome": "Negative",
+        "age": "10"
+      }
+    ]
+  },
+  "GET /etl/pmtct-mother-register/:district": {
+    "status": "success",
+    "data": [
+      {
+        "mother_id": "PMTCT-00001",
+        "household_id": "HH-00004",
+        "firstname": "Bwalya",
+        "lastname": "Mulenga",
+        "district": "Livingstone",
+        "facility": "Monze Mission Clinic",
+        "date_enrolled": "23-04-2026",
+        "art_start_date": "21-02-2026",
+        "final_outcome": "",
+        "age": "33"
+      },
+      {
+        "mother_id": "PMTCT-00002",
+        "household_id": "HH-00010",
+        "firstname": "Lweendo",
+        "lastname": "Tembo",
+        "district": "Kapiri Mposhi",
+        "facility": "Mazabuka Urban Clinic",
+        "date_enrolled": "18-12-2026",
+        "art_start_date": "08-07-2025",
+        "final_outcome": "Negative",
+        "age": "4"
+      },
+      {
+        "mother_id": "PMTCT-00003",
+        "household_id": "HH-00016",
+        "firstname": "Chileshe",
+        "lastname": "Sakala",
+        "district": "Chibombo",
+        "facility": "Mazabuka Urban Clinic",
+        "date_enrolled": "11-01-2026",
+        "art_start_date": "05-03-2026",
+        "final_outcome": "Positive",
+        "age": "16"
+      },
+      {
+        "mother_id": "PMTCT-00004",
+        "household_id": "HH-00027",
+        "firstname": "Bwalya",
+        "lastname": "Banda",
+        "district": "Serenje",
+        "facility": "Choma District Hospital",
+        "date_enrolled": "10-05-2026",
+        "art_start_date": "05-03-2026",
+        "final_outcome": "Unknown",
+        "age": "16"
+      },
+      {
+        "mother_id": "PMTCT-00005",
+        "household_id": "HH-00028",
+        "firstname": "Chileshe",
+        "lastname": "Chanda",
+        "district": "Mazabuka",
+        "facility": "Serenje Health Post",
+        "date_enrolled": "04-07-2026",
+        "art_start_date": "26-04-2026",
+        "final_outcome": "Negative",
+        "age": "33"
+      },
+      {
+        "mother_id": "PMTCT-00006",
+        "household_id": "HH-00007",
+        "firstname": "Kondwani",
+        "lastname": "Tembo",
+        "district": "Livingstone",
+        "facility": "Mukonchi Rural Health Centre",
+        "date_enrolled": "28-08-2025",
+        "art_start_date": "11-10-2026",
+        "final_outcome": "Unknown",
+        "age": "4"
+      }
+    ]
+  }
+}

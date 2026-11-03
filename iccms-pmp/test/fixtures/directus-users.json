@@ -1,0 +1,377 @@
+{
+  "POST /auth/login": {
+    "data": {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.FIXTURE.signature",
+      "refresh_token": "FIXTURE-REFRESH-TOKEN",
+      "expires": 900000
+    }
+  },
+  "POST /auth/password/request": {
+    "data": {}
+  },
+  "POST /auth/password/reset": {
+    "data": {}
+  },
+  "GET /users/me": {
+    "data": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "email": "district.user@example.org",
+      "first_name": "Chanda",
+      "last_name": "Mulenga",
+      "role": {
+        "id": "00000000-0000-4000-8000-0000000000aa",
+        "name": "ECAP+ User"
+      },
+      "description": "District User",
+      "title": "Central Province",
+      "location": "Kabwe",
+      "facility": null,
+      "district": null,
+      "avatar": null,
+      "status": "active",
+      "last_access": "2026-05-02T20:35:00.000Z",
+      "password_change_required": false
+    }
+  },
+  "GET /users/me?fields=id": {
+    "data": {
+      "id": "00000000-0000-4000-8000-000000000001"
+    }
+  },
+  "GET /users": {
+    "data": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "email": "district.user@example.org",
+        "first_name": "Chanda",
+        "last_name": "Mulenga",
+        "role": {
+          "id": "00000000-0000-4000-8000-0000000000aa",
+          "name": "ECAP+ User"
+        },
+        "description": "District User",
+        "title": "Central Province",
+        "location": "Kabwe",
+        "facility": null,
+        "district": null,
+        "avatar": null,
+        "status": "active",
+        "last_access": "2026-05-02T20:35:00.000Z",
+        "password_change_required": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "email": "admin@example.org",
+        "first_name": "Chanda",
+        "last_name": "Mulenga",
+        "role": {
+          "id": "00000000-0000-4000-8000-0000000000bb",
+          "name": "Administrator"
+        },
+        "description": "Administrator",
+        "title": "All",
+        "location": "All",
+        "facility": null,
+        "district": null,
+        "avatar": null,
+        "status": "active",
+        "last_access": "2026-05-02T20:35:00.000Z",
+        "password_change_required": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "email": "provincial.user@example.org",
+        "first_name": "Chanda",
+        "last_name": "Mulenga",
+        "role": {
+          "id": "00000000-0000-4000-8000-0000000000aa",
+          "name": "ECAP+ User"
+        },
+        "description": "Provincial User",
+        "title": "Southern Province",
+        "location": "All",
+        "facility": null,
+        "district": null,
+        "avatar": null,
+        "status": "active",
+        "last_access": "2026-05-02T20:35:00.000Z",
+        "password_change_required": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "email": "support@example.org",
+        "first_name": "Chanda",
+        "last_name": "Mulenga",
+        "role": {
+          "id": "00000000-0000-4000-8000-0000000000cc",
+          "name": "ECAP+ Support"
+        },
+        "description": "Support User",
+        "title": "All",
+        "location": "All",
+        "facility": null,
+        "district": null,
+        "avatar": null,
+        "status": "active",
+        "last_access": "2026-05-02T20:35:00.000Z",
+        "password_change_required": false
+      }
+    ]
+  },
+  "GET /users?limit=-1": {
+    "data": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "email": "district.user@example.org",
+        "first_name": "Chanda",
+        "last_name": "Mulenga",
+        "role": {
+          "id": "00000000-0000-4000-8000-0000000000aa",
+          "name": "ECAP+ User"
+        },
+        "description": "District User",
+        "title": "Central Province",
+        "location": "Kabwe",
+        "facility": null,
+        "district": null,
+        "avatar": null,
+        "status": "active",
+        "last_access": "2026-05-02T20:35:00.000Z",
+        "password_change_required": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "email": "admin@example.org",
+        "first_name": "Chanda",
+        "last_name": "Mulenga",
+        "role": {
+          "id": "00000000-0000-4000-8000-0000000000bb",
+          "name": "Administrator"
+        },
+        "description": "Administrator",
+        "title": "All",
+        "location": "All",
+        "facility": null,
+        "district": null,
+        "avatar": null,
+        "status": "active",
+        "last_access": "2026-05-02T20:35:00.000Z",
+        "password_change_required": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "email": "provincial.user@example.org",
+        "first_name": "Chanda",
+        "last_name": "Mulenga",
+        "role": {
+          "id": "00000000-0000-4000-8000-0000000000aa",
+          "name": "ECAP+ User"
+        },
+        "description": "Provincial User",
+        "title": "Southern Province",
+        "location": "All",
+        "facility": null,
+        "district": null,
+        "avatar": null,
+        "status": "active",
+        "last_access": "2026-05-02T20:35:00.000Z",
+        "password_change_required": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "email": "support@example.org",
+        "first_name": "Chanda",
+        "last_name": "Mulenga",
+        "role": {
+          "id": "00000000-0000-4000-8000-0000000000cc",
+          "name": "ECAP+ Support"
+        },
+        "description": "Support User",
+        "title": "All",
+        "location": "All",
+        "facility": null,
+        "district": null,
+        "avatar": null,
+        "status": "active",
+        "last_access": "2026-05-02T20:35:00.000Z",
+        "password_change_required": false
+      }
+    ]
+  },
+  "GET /users/:id": {
+    "data": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "email": "district.user@example.org",
+      "first_name": "Chanda",
+      "last_name": "Mulenga",
+      "role": {
+        "id": "00000000-0000-4000-8000-0000000000aa",
+        "name": "ECAP+ User"
+      },
+      "description": "District User",
+      "title": "Central Province",
+      "location": "Kabwe",
+      "facility": null,
+      "district": null,
+      "avatar": null,
+      "status": "active",
+      "last_access": "2026-05-02T20:35:00.000Z",
+      "password_change_required": false
+    }
+  },
+  "POST /users/invite": {
+    "data": {
+      "id": "00000000-0000-4000-8000-0000000000ff"
+    }
+  },
+  "PATCH /users/:id": {
+    "data": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "email": "district.user@example.org",
+      "first_name": "Chanda",
+      "last_name": "Mulenga",
+      "role": {
+        "id": "00000000-0000-4000-8000-0000000000aa",
+        "name": "ECAP+ User"
+      },
+      "description": "District User",
+      "title": "Central Province",
+      "location": "Kabwe",
+      "facility": null,
+      "district": null,
+      "avatar": null,
+      "status": "active",
+      "last_access": "2026-05-02T20:35:00.000Z",
+      "password_change_required": false
+    }
+  },
+  "GET /roles": {
+    "data": [
+      {
+        "id": "00000000-0000-4000-8000-0000000000aa",
+        "name": "ECAP+ User"
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000bb",
+        "name": "Administrator"
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000cc",
+        "name": "ECAP+ Support"
+      }
+    ]
+  },
+  "GET /notifications": {
+    "data": [
+      {
+        "id": "00000000-0000-4000-8000-000000000010",
+        "status": "inbox",
+        "timestamp": "2026-10-27T12:11:00.000Z",
+        "sender": "00000000-0000-4000-8000-000000000003",
+        "recipient": "00000000-0000-4000-8000-000000000001",
+        "subject": "Normal",
+        "message": "Fixture chat message body.",
+        "collection": "support_chat",
+        "item": null
+      }
+    ]
+  },
+  "POST /notifications": {
+    "data": {
+      "id": "00000000-0000-4000-8000-000000000011"
+    }
+  },
+  "DELETE /notifications/:id": {
+    "data": null
+  },
+  "GET /activity": {
+    "data": [
+      {
+        "id": "00000000-0000-4000-8000-000000000020",
+        "action": "update",
+        "collection": "all_households",
+        "timestamp": "2026-08-04T03:06:00.000Z",
+        "user": {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "first_name": "Chanda",
+          "last_name": "Mulenga",
+          "email": "district.user@example.org",
+          "district": null,
+          "facility": null,
+          "location": "Kabwe",
+          "title": "Central Province",
+          "description": "District User"
+        }
+      }
+    ]
+  },
+  "GET /items/flagged_forms_ecapplus_pmp": {
+    "data": [
+      {
+        "id": 1,
+        "household_id": "HH-00001",
+        "vca_id": "VCA-00001",
+        "verifier": "Chanda Mulenga",
+        "comment": "Fixture flag comment.",
+        "status": "open",
+        "date_created": "2026-11-27T19:48:00.000Z"
+      }
+    ]
+  },
+  "GET /items/flagged_forms_ecapii": {
+    "data": []
+  },
+  "GET /items/weekly_extracts": {
+    "data": [
+      {
+        "id": 1,
+        "file": "00000000-0000-4000-8000-000000000030",
+        "title": "Weekly extract",
+        "date_created": "2026-05-23T22:05:00.000Z"
+      }
+    ]
+  },
+  "POST /files": {
+    "data": {
+      "id": "00000000-0000-4000-8000-000000000031"
+    }
+  },
+  "GET /assets/:id": "<binary asset>",
+  "#role-patterns": {
+    "district": {
+      "description": "District User",
+      "title": "Central Province",
+      "location": "Kabwe"
+    },
+    "province": {
+      "description": "Provincial User",
+      "title": "Southern Province",
+      "location": "All"
+    },
+    "admin": {
+      "description": "Administrator",
+      "title": "All",
+      "location": "All"
+    },
+    "support": {
+      "description": "Support User",
+      "title": "All",
+      "location": "All"
+    },
+    "lowercase-admin": {
+      "description": "administrator",
+      "title": "All",
+      "location": "All"
+    },
+    "no-description-with-role": {
+      "description": "",
+      "title": "All",
+      "location": "All"
+    },
+    "unscoped": {
+      "description": "",
+      "title": "",
+      "location": ""
+    }
+  }
+}

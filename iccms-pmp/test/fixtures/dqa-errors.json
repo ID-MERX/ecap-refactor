@@ -1,0 +1,7 @@
+{
+  "GET /": "<JPEG bytes>",
+  "ALL *": {
+    "status": "error",
+    "message": "Can't find /unknown/path on this server"
+  }
+}

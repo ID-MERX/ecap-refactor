@@ -1,0 +1,12 @@
+{
+  "POST /agent/chat": {
+    "status": "success",
+    "response": "Household HH-00001 has 4 members and received the Schooled service this month.",
+    "model": "llama3.1:8b"
+  },
+  "GET /agent/health": {
+    "status": "success",
+    "model_reachable": true,
+    "uptime_seconds": 86400
+  }
+}

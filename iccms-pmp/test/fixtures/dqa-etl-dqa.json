@@ -1,0 +1,239 @@
+{
+  "GET /etl/facility-list": {
+    "status": "success",
+    "data": [
+      {
+        "ward": "Ward 1",
+        "district": "Chibombo"
+      },
+      {
+        "ward": "Ward 2",
+        "district": "Kabwe"
+      },
+      {
+        "ward": "Ward 3",
+        "district": "Kapiri Mposhi"
+      },
+      {
+        "ward": "Ward 7",
+        "district": "Mkushi"
+      },
+      {
+        "ward": "Ward 12",
+        "district": "Mumbwa"
+      }
+    ]
+  },
+  "GET /etl/duplicates": {
+    "status": "success",
+    "data": {
+      "summary": {
+        "groups": "12",
+        "records": "31"
+      },
+      "groups": [
+        {
+          "household_id": "HH-00001",
+          "match_key": "mwale-563",
+          "records": "2"
+        },
+        {
+          "household_id": "HH-00002",
+          "match_key": "mulenga-677",
+          "records": "2"
+        },
+        {
+          "household_id": "HH-00003",
+          "match_key": "sakala-654",
+          "records": "5"
+        },
+        {
+          "household_id": "HH-00004",
+          "match_key": "phiri-865",
+          "records": "2"
+        },
+        {
+          "household_id": "HH-00005",
+          "match_key": "phiri-916",
+          "records": "2"
+        }
+      ]
+    }
+  },
+  "GET /etl/dqa-checks": {
+    "status": "success",
+    "data": [
+      {
+        "check": "check_1",
+        "label": "Data quality check 1",
+        "count": "371"
+      },
+      {
+        "check": "check_2",
+        "label": "Data quality check 2",
+        "count": "44"
+      },
+      {
+        "check": "check_3",
+        "label": "Data quality check 3",
+        "count": "268"
+      },
+      {
+        "check": "check_4",
+        "label": "Data quality check 4",
+        "count": "260"
+      },
+      {
+        "check": "check_5",
+        "label": "Data quality check 5",
+        "count": "248"
+      },
+      {
+        "check": "check_6",
+        "label": "Data quality check 6",
+        "count": "367"
+      },
+      {
+        "check": "check_7",
+        "label": "Data quality check 7",
+        "count": "203"
+      },
+      {
+        "check": "check_8",
+        "label": "Data quality check 8",
+        "count": "147"
+      },
+      {
+        "check": "check_9",
+        "label": "Data quality check 9",
+        "count": "194"
+      },
+      {
+        "check": "check_10",
+        "label": "Data quality check 10",
+        "count": "33"
+      },
+      {
+        "check": "check_11",
+        "label": "Data quality check 11",
+        "count": "82"
+      },
+      {
+        "check": "check_12",
+        "label": "Data quality check 12",
+        "count": "393"
+      },
+      {
+        "check": "check_13",
+        "label": "Data quality check 13",
+        "count": "130"
+      },
+      {
+        "check": "check_14",
+        "label": "Data quality check 14",
+        "count": "325"
+      },
+      {
+        "check": "check_15",
+        "label": "Data quality check 15",
+        "count": "204"
+      },
+      {
+        "check": "check_16",
+        "label": "Data quality check 16",
+        "count": "177"
+      },
+      {
+        "check": "check_17",
+        "label": "Data quality check 17",
+        "count": "131"
+      },
+      {
+        "check": "check_18",
+        "label": "Data quality check 18",
+        "count": "78"
+      }
+    ]
+  },
+  "GET /etl/dqa-records": {
+    "status": "success",
+    "data": [
+      {
+        "check": "check_1",
+        "household_id": "HH-00001",
+        "unique_id": "VCA-00001",
+        "district": "Mazabuka",
+        "issue": "Missing date of birth"
+      },
+      {
+        "check": "check_1",
+        "household_id": "HH-00002",
+        "unique_id": "VCA-00002",
+        "district": "Kazungula",
+        "issue": "Missing date of birth"
+      },
+      {
+        "check": "check_1",
+        "household_id": "HH-00003",
+        "unique_id": "VCA-00003",
+        "district": "Chibombo",
+        "issue": "Missing date of birth"
+      },
+      {
+        "check": "check_1",
+        "household_id": "HH-00004",
+        "unique_id": "VCA-00004",
+        "district": "Kapiri Mposhi",
+        "issue": "Missing date of birth"
+      },
+      {
+        "check": "check_1",
+        "household_id": "HH-00005",
+        "unique_id": "VCA-00005",
+        "district": "Kazungula",
+        "issue": "Missing date of birth"
+      }
+    ]
+  },
+  "GET /etl/action-queue": {
+    "status": "success",
+    "data": [
+      {
+        "household_id": "HH-00001",
+        "priority": "low",
+        "description": "Service recorded without a case plan",
+        "due_date": "02-08-2026"
+      },
+      {
+        "household_id": "HH-00002",
+        "priority": "low",
+        "description": "Service recorded without a case plan",
+        "due_date": "27-02-2026"
+      },
+      {
+        "household_id": "HH-00003",
+        "priority": "medium",
+        "description": "Service recorded without a case plan",
+        "due_date": "03-06-2026"
+      },
+      {
+        "household_id": "HH-00004",
+        "priority": "high",
+        "description": "Service recorded without a case plan",
+        "due_date": "24-02-2026"
+      },
+      {
+        "household_id": "HH-00005",
+        "priority": "medium",
+        "description": "Service recorded without a case plan",
+        "due_date": "10-04-2025"
+      },
+      {
+        "household_id": "HH-00006",
+        "priority": "medium",
+        "description": "Service recorded without a case plan",
+        "due_date": "12-03-2026"
+      }
+    ]
+  }
+}
