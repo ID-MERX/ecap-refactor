@@ -1,6 +1,6 @@
 # hts — legacy audit (part: register)
 
-> New module `hts` · Legacy routes → new routes: `/registers/hts` → `/hts` (this part); `/registers/hts-risk` → `/hts/risk` and `/profile/hts-details` → `/hts/:clientId` are covered by the other parts · Plan: MIGRATION_PLAN.md §5 row "hts" (`legacy:../iccms-pmp/docs/MIGRATION_PLAN.md:446`)
+> New module `hts` · Legacy routes → new routes: `/registers/hts` → `/hts` (this part); `/registers/hts-risk` → `/hts/risk` and `/profile/hts-details` → `/hts/:clientId` are covered by the other parts · Plan: MIGRATION_PLAN.md §5 row "hts" (MIGRATION_PLAN.md §5, row "hts")
 >
 > This part covers the HTS (HIV testing services) register page `HTSRegister` only: one page with two tabs ("Register" and "Charts"), five KPI cards, two bar charts, a client-side register table and a CSV export. The page downloads the **whole national HTS register** once and does all scoping, FY filtering, time-period filtering, KPI filtering, search, sort and pagination on the client.
 

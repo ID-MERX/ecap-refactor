@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* Tailwind v4 is CSS-first: no tailwind.config.ts and no PostCSS config. Theme tokens are declared
+   here with @theme and consumed as utilities (e.g. bg-brand). Phase 2 keeps this deliberately small;
+   the shadcn token set arrives in Phase 3 with the UI components. */
+@theme {
+  --color-brand-50: oklch(0.97 0.014 254);
+  --color-brand-500: oklch(0.62 0.19 259);
+  --color-brand-600: oklch(0.55 0.21 259);
+  --color-brand-900: oklch(0.38 0.11 265);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-white text-slate-900 antialiased;
+}

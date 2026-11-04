@@ -1,6 +1,6 @@
 # hts — legacy audit
 
-> Legacy routes → new routes: `/registers/hts` → `/hts` (this part); `/registers/hts-risk` → `/hts/risk` and `/profile/hts-details` → `/hts/:clientId` are covered by the other parts · Plan: MIGRATION_PLAN.md §5 row "hts" (`legacy:../iccms-pmp/docs/MIGRATION_PLAN.md:446`)  · *part `register`*
+> Legacy routes → new routes: `/registers/hts` → `/hts` (this part); `/registers/hts-risk` → `/hts/risk` and `/profile/hts-details` → `/hts/:clientId` are covered by the other parts · Plan: MIGRATION_PLAN.md §5 row "hts" (MIGRATION_PLAN.md §5, row "hts")  · *part `register`*
 > This part covers the HTS (HIV testing services) register page `HTSRegister` only: one page with two tabs ("Register" and "Charts"), five KPI cards, two bar charts, a client-side register table and a CSV export. The page downloads the **whole national HTS register** once and does all scoping, FY filtering, time-period filtering, KPI filtering, search, sort and pagination on the client.
 > Legacy routes → new routes: `/registers/hts-risk` → `/hts/risk`; `/profile/hts-details?id=<id>` → `/hts/:clientId` (this part). `/registers/hts` → `/hts` is covered by the "register" part. · Plan: MIGRATION_PLAN.md §5 row "hts"  · *part `risk-profile`*
 > Merged from the step-3 drafts: `register`, `risk-profile`. Content is carried over verbatim; only heading levels, the merged header and the shared Legacy files table were consolidated.
