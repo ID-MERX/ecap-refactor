@@ -36,6 +36,8 @@ function Router({ manifests }: { manifests: typeof allManifests }): ReactNode {
   );
 
   // Remount on access change so no stale route stays mounted across a sign-out.
+  // URL-state providers are mounted as a layout route *inside* the router (see `router.tsx`), because
+  // nuqs and the FY filter both read the router's location.
   return <RouterProvider key={accessKey} router={router} />;
 }
 

@@ -127,6 +127,10 @@ Answers to `MIGRATION_PLAN.md` §10, plus decisions taken later.
 | 30 | Contract fixtures | Backend rule sets are copied **verbatim** from `backend.patch` into `test/contract/*.cjs` by `scripts/sync-backend-contract.mjs`; only the two `require` targets are rewritten so the frontend does not depend on `axios` | 2026-11-04 |
 | 31 | Access parity | `deriveAccess` mirrors `lib/userScope.js` rule for rule, and **82 tests run the backend's real code** against ours. The single deliberate divergence: an unknown `location` is `level:"none"` here and a raw district on the server | 2026-11-04 |
 | 32 | Router rebuild | The router is rebuilt and remounted when the access level changes, so a sign-out cannot leave the previous user's routes mounted | 2026-11-04 |
+| 33 | Pagination | **Server-side pagination is required** (developer decision, 2026-11-04). Registers send `page`/`pageSize`/`sort`/`order` and hold one page. Until backend ask #8 lands, `households/api/client.ts` slices locally behind a `MAX_ROWS` cap and **renders that it truncated** | 2026-11-04 |
+| 34 | Backend-leaning work | **Standing principle:** any function that requires downloading whole registers (global search, district aggregates, dashboard rollups, exports over 260k rows) moves to the backend rather than being optimised in the browser. Recorded as backend asks, not worked around | 2026-11-04 |
+| 35 | Module manifest types | `ModuleManifest` types live in `src/core/modules` (types only), because a module cannot import `app` without breaking the layer rule. The registry that assembles routes stays in `app` | 2026-11-04 |
+| 36 | Table state | Filters, sort and page live in the URL (`nuqs`). `district` and `search` are no longer read-only-on-mount | 2026-11-04 |
 
 ## Access-rule resolutions
 
@@ -188,8 +192,9 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 1 Audit | **done + verified** | 2026-11-04 | 23 module files, §1–§8 complete, 17 fixtures; **6,863/6,863 citations resolve** against the patched trees (`scripts/verify-audit.sh`) |
 | 0 Preparation | done | 2026-11-04 | `backend.patch` + `legacy-frontend.patch` verified |
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
-| 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards; `pnpm check` green; 123 tests |
-| 4 Platform | not started | | Next |
+| 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
+| 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
+| 5 Remaining modules | not started | | Next, one module per session |
 
 ## Module checklist
 
