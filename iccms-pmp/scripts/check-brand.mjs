@@ -57,6 +57,9 @@ const ALLOW_LINE = [
   // A Directus *role name* that exists in the live instance. Renaming it here would break admin
   // access, so it is data, not branding.
   /["'`]ECAP II["'`]/,
+  // References to the read-only legacy checkout by path. This is a directory name, not branding — a
+  // comment explaining where a rule came from is exactly what we want in the code.
+  /old-ecap-pmp[\w/.-]*/,
   // Legacy storage keys, named only to prove the new app does not collide with or delete them.
   /["'`]ecap\.(?:access_token|known_users|returning_user|first_login|ui_theme|sidebar_scroll)["'`]/,
   /`ecap[-.][\w-]+`/,

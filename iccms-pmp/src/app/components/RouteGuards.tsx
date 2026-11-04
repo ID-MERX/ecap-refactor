@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
 
 import { useAuth } from "@/core/auth";
-import { satisfies } from "@/app/manifest";
+import { satisfies } from "@/core/modules";
 import type { Permission } from "@/core/access/types";
 
 import { LoadingScreen } from "./LoadingScreen";

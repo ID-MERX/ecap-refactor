@@ -13,7 +13,8 @@ import { LogOut, Menu, X } from "lucide-react";
 import { siteConfig } from "@/config";
 import { useAuth } from "@/core/auth";
 import { buildNav } from "@/app/registry";
-import type { ModuleManifest } from "@/app/manifest";
+import { FyChip } from "@/platform/scope/FyChip";
+import type { ModuleManifest } from "@/core/modules";
 
 import { LoadingScreen } from "../components/LoadingScreen";
 
@@ -131,7 +132,8 @@ export function AppShell({
             </span>
           ) : null}
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <FyChip />
             <button
               type="button"
               onClick={handleSignOut}
