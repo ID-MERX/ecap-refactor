@@ -70,7 +70,7 @@ Audit tooling (none of it ships):
 ```bash
 ./scripts/verify-audit.sh                # apply both patches to a temp dir and re-open all 6,863 citations
 python3 scripts/check-citations.py       # same, against the unpatched trees (expects 0 after a patch)
-node scripts/sync-backend-contract.mjs   # regenerate test/contract/backend-geography.js
+node scripts/sync-backend-contract.mjs   # regenerate test/contract/backend-geography.cjs
 python3 scripts/draft-fixtures.py --check
 ```
 

@@ -20,7 +20,7 @@ import {
  * separate read-only checkout with its own module system, and this must fail if the file is missing
  * rather than silently skip the most important assertion in the suite.
  */
-const BACKEND_GEOGRAPHY = resolve(import.meta.dirname, "../../test/contract/backend-geography.js");
+const BACKEND_GEOGRAPHY = resolve(import.meta.dirname, "../../test/contract/backend-geography.cjs");
 
 describe("geography", () => {
   it("is exactly two provinces with twelve districts", () => {
