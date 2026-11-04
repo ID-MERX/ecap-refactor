@@ -11,9 +11,14 @@ the legacy app in `../old-ecap-pmp`. Read these files at the start of every sess
 - `docs/audit/<module>.md` — feature-by-feature inventory for one module (same names as `src/modules/`;
   app-wide shell behaviour is in `docs/audit/shell.md`). Read only the file(s) for the module you are working on.
 
-Phase 1 is complete. Before trusting a backend line number, read `docs/audit/_SOURCE_BASELINE.md`:
-the audited tree carried the `security-fix` patch, and this workspace does not. The *behaviour* in
-`docs/AUDIT.md` §3.1 is authoritative; the local `middleware/verifyDirectusToken.js` is not.
+Phase 1 is complete **and verified**: all 6,863 citations resolve against the patched trees. The
+`backend.patch` / `legacy-frontend.patch` files at the repo root are applied to throwaway copies by
+`scripts/verify-audit.sh`; the reference trees in the workspace stay **unpatched and read-only**, so
+reading `../ecap-plus-pmp-backend` directly shows the *pre-patch* code. Run the script when you need
+ground truth about the backend.
+
+Phase 2 is complete: `src/config` is written, the toolchain is installed, and `pnpm check` is green.
+Phases 3+ build on it.
 
 ## Hard rules
 
@@ -45,19 +50,22 @@ the audited tree carried the `security-fix` patch, and this workspace does not. 
 ## Commands
 
 ```
-pnpm dev            # dev server
+pnpm install        # pnpm 12: build approvals live in pnpm-workspace.yaml
+pnpm dev            # dev server (0.0.0.0:5173)
 pnpm build          # production build
 pnpm typecheck      # tsc --noEmit
 pnpm lint           # eslint (includes boundary rules)
 pnpm test           # vitest
 pnpm test:e2e       # playwright
 pnpm check:brand    # fails if branding/program strings are hardcoded outside src/config
+pnpm check:contract # fails if test/contract/backend-geography.js drifts from backend.patch
 pnpm check          # all of the above except e2e — run before declaring anything done
 ```
 
 Audit maintenance (Phase 1 tooling, kept for later phases — none of it ships):
 
 ```
+./scripts/verify-audit.sh                   # apply both patches to a temp dir, check all citations
 python3 scripts/check-citations.py          # re-open every legacy:/backend: citation in docs/
 python3 scripts/check-citations.py --strict # also flag blank lines and >120-line ranges
 python3 scripts/merge-audit-drafts.py       # rebuild docs/audit/<module>.md from _drafts/step3/
@@ -66,9 +74,9 @@ python3 scripts/draft-fixtures.py           # regenerate test/fixtures/ (determi
 python3 scripts/draft-fixtures.py --check   # fail if fixtures are stale
 ```
 
-Run `check-citations.py` after editing any audit file; it takes under a second. An unresolved
-citation is only acceptable if it names one of the patch-only backend files listed in
-`docs/audit/_SOURCE_BASELINE.md`.
+Run `./scripts/verify-audit.sh` after editing any audit file; it takes under a second and should
+report **0 problems**. A citation may never escape its own tree (`legacy:../iccms-pmp/...` is always a
+mistake) — the checker rejects those outright.
 
 ## Structure and import rules
 

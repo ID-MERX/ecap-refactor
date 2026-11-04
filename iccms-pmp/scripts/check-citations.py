@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, asdict
@@ -28,9 +29,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REPO = ROOT.parent
+# Overridable so the audit can be re-verified against *patched* scratch copies of the reference
+# trees without ever touching them. See scripts/verify-audit.sh.
 SOURCES = {
-    "legacy": REPO / "old-ecap-pmp",
-    "backend": REPO / "ecap-plus-pmp-backend",
+    "legacy": Path(os.environ.get("ECAP_LEGACY_DIR") or REPO / "old-ecap-pmp"),
+    "backend": Path(os.environ.get("ECAP_BACKEND_DIR") or REPO / "ecap-plus-pmp-backend"),
 }
 
 # legacy:src/App.tsx:112-133   legacy:src/App.tsx:146,214-224   backend:index.js:23-26
@@ -90,6 +93,10 @@ def resolvable(src: str, rel: str) -> tuple[Path | None, str | None]:
     base = SOURCES[src]
     if not base.is_dir():
         return None, f"source tree {src} not found at {base}"
+    if rel.startswith("../") or rel.startswith("/"):
+        # A legacy:/backend: citation must live inside its own tree. Pointing at the *new*
+        # project (e.g. legacy:../iccms-pmp/docs/...) is always an authoring mistake.
+        return None, f"citation escapes the {src} tree (relative path: {rel})"
     candidate = base / rel
     if candidate.is_file():
         return candidate, None

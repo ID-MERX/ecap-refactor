@@ -1,0 +1,17 @@
+# Build output
+dist
+coverage
+playwright-report
+test-results
+
+# Dependencies
+node_modules
+
+# Environment: everything except the documented example
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+*.log

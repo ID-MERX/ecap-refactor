@@ -111,19 +111,60 @@ Answers to `MIGRATION_PLAN.md` §10, plus decisions taken later.
 | 14 | Geography | **Confirmed**: 2 provinces / 12 districts as in `districts.ts` and `backend:config/geography.js` | 2026-11-03 |
 | 15 | Assistant name | **Keep "Bumi"**, set once as `siteConfig.assistant.name` | 2026-11-03 |
 | 16 | Support e-mail | **Keep `info@bluecodeltd.com`** for now as `siteConfig.organization.supportEmail` | 2026-11-03 |
-| 17 | Patch files | Developer has `backend.patch` and `legacy-frontend.patch`; to be supplied for citation verification | 2026-11-03 |
+| 17 | Patch files | **Supplied and verified** — applied to scratch trees; all 6,863 citations resolve | 2026-11-04 |
+| 18 | Brand assets | **Neutral placeholders** for now; real assets supplied later | 2026-11-04 |
+| 19 | Access tiers | **Three disjoint tiers**: `admin` (everything, a separate user), `province` (assigned provinces only), `district` (assigned districts only). No union of the nine legacy inference sites — see open question 5 | 2026-11-04 |
+| 20 | Build tool | **Vite 8** + `@vitejs/plugin-react-swc`; CRA/CRACO retired | 2026-11-04 |
+| 21 | Server state | **TanStack Query v5** as the single server-state layer; no hand-rolled `useEffect` fetching | 2026-11-04 |
+| 22 | TypeScript | **`strict: true` from day one**, plus `noUncheckedIndexedAccess`. Pinned to **TS 6.0.3**, not 7.0 — `typescript-eslint` refuses to run against TS 7 | 2026-11-04 |
+| 23 | Env vars | `VITE_`-only, zod-validated in `src/config/env.ts`; missing/malformed values throw at startup; removed vars and any `REACT_*` var abort startup | 2026-11-04 |
+| 24 | Sub-population shape | **Flat array** with one optional `registers` field per row (7 on household, 14 on VCA). Simpler to read than a grouped map and the per-screen split stays data, not code | 2026-11-04 |
 
 ## Installed versions
 
-(filled in Phase 2)
+Installed 2026-11-04, pinned exactly, per the version policy in `MIGRATION_PLAN.md` §3 (latest
+stable whose release is **older than 14 days**). Where the newest release was too fresh, the last
+compliant version was taken and is noted.
+
+| Package | Version | Note |
+|---|---|---|
+| node | 22 (`.nvmrc`) | |
+| pnpm | 12.16.1 | build approvals live in `pnpm-workspace.yaml` |
+| react / react-dom | 19.3.1 | |
+| vite | 8.3.5 | released 2026-10-21, on the 14-day boundary |
+| @vitejs/plugin-react-swc | 4.3.3 | |
+| typescript | **6.0.3** | **not 7.0.2** — `typescript-eslint` (8.72.0) hard-errors on TS 7.0 |
+| tailwindcss / @tailwindcss/vite | 4.3.3 | 4.3.4 was 2 days old; skipped |
+| zod | 4.6.7 | |
+| @tanstack/react-query | not installed yet | wired in Phase 3 with the query client |
+| react-router | not installed yet | Phase 3 |
+| vitest | 4.1.12 | 5.1.0 was too fresh |
+| @testing-library/react / jest-dom | 16.3.3 / 7.0.1 | |
+| jsdom | 30.1.3 | |
+| eslint | 10.13.0 | |
+| @eslint/js | 10.0.1 | |
+| typescript-eslint | 8.72.0 | |
+| eslint-plugin-boundaries | 7.2.1 | uses the v7 `dependencies` rule; v5 names are deprecated |
+| eslint-plugin-react-hooks | 7.1.0 | |
+| eslint-import-resolver-typescript | 4.4.5 | resolves `@/` for the boundaries plugin |
+| prettier | 3.9.10 | |
+| knip | 6.42.1 | |
+| @playwright/test | not installed yet | Phase 3 |
+| msw | not installed yet | Phase 3, tests only |
+
+Deferred to Phase 3 on purpose: `@tanstack/react-query`, `react-router`, `nuxt`/`nuqs`,
+`react-hook-form`, `@directus/sdk`, `date-fns`, `lucide-react`, `sonner`,
+`@superset-ui/embedded-sdk`, `@tanstack/react-table`, `@tanstack/react-virtual`, Playwright, MSW.
+This phase proves the toolchain with the smallest possible dependency set.
 
 ## Phase log
 
 | Phase / module | Status | Session date | Notes |
 |---|---|---|---|
-| 1 Audit | **done** | 2026-11-03 | 23 module files, §1–§8 complete, 17 fixtures, 6,863 citations checked |
-| 0 Preparation | assumed done | | Backend source present; **patch files missing** — see "Known issue" |
-| 2 Scaffold | not started | | Next session |
+| 1 Audit | **done + verified** | 2026-11-04 | 23 module files, §1–§8 complete, 17 fixtures; **6,863/6,863 citations resolve** against the patched trees (`scripts/verify-audit.sh`) |
+| 0 Preparation | done | 2026-11-04 | `backend.patch` + `legacy-frontend.patch` verified |
+| 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
+| 3 Core and shell | not started | | Blocked on nothing — open question 5 is now answered |
 
 ## Module checklist
 
@@ -142,16 +183,20 @@ These were raised by the module audits. The ones marked **before Phase 2/3** blo
 - ~~Assistant name~~ → **"Bumi"**, from `siteConfig.assistant.name`.
 - ~~Support e-mail~~ → **`info@bluecodeltd.com`** for now, from `siteConfig.organization.supportEmail`.
 
-**Still open — blocks Phase 3 (`deriveAccess`)**
+**Answered (2026-11-04) — Phase 3 can write `deriveAccess`**
 
-5. **Who is an admin, a province user, a district user?** Nine rule sites disagree (§4.4). The audit
-   proposes a resolution — union of the admin rules, no `VITE_DEFAULT_DISTRICT` fallback, unscoped
-   users get `level: "none"` and a "no data scope assigned" state. Confirm or override per row.
-6. **Should `/districts` be national + province only?** Legacy hides it from district users in the
-   sidebar but leaves the route open and serving national data.
-7. **Should a district user be able to change district within their province?** Legacy's province
-   branch allows it and the district branch does not; the Referrals page has a bug that makes the
-   selector snap back either way.
+5. ~~Who is an admin, a province user, a district user?~~ → **three disjoint tiers**, confirmed by the
+   developer: an **admin** sees everything in the dashboard and is a *separate user* from the other
+   tiers; a **province user** sees only their assigned province(s); a **district user** sees only
+   their assigned district(s). No overlap, no inheritance. This matches `backend:lib/userScope.js`
+   (`deriveScope` returns exactly one `level` — `all` / `province` / `district` / `none`) and means
+   the frontend should **not** union the nine legacy rule sites, which disagreed precisely because
+   they tried to infer the tier from free text. See decision 19.
+6. **Should `/districts` be national + province only?** Still open (cosmetic, does not block Phase 3).
+7. **Should a district user be able to change district within their province?** Still open. Given
+   answer 5 (the tiers are disjoint), the likely answer is **no**: a district user's scope is their
+   assigned district, so a district selector should be a fixed label, not a dropdown. Confirm in
+   Phase 3 before the filter bar is built.
 
 **Before Phase 5 (per module)** — collected in each `docs/audit/<module>.md` under "Open questions",
 and in `AUDIT.md` §6 (Surprises). The highest-impact ones:

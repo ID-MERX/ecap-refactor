@@ -1,0 +1,7 @@
+packages:
+  - "."
+
+# pnpm 10+ blocks postinstall scripts by default. These two need theirs (native binaries).
+allowBuilds:
+  "@swc/core": true
+  esbuild: true
