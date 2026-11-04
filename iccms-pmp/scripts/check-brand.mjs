@@ -51,6 +51,15 @@ const ALLOW_LINE = [
   /\/items\/(?:flagged_forms_ecapplus\w*|hts_register_ecapplus)/,
   // Environment variable names inherited from the backend.
   /\b(?:VITE|REACT_APP)_[A-Z0-9_]*ECAP[A-Z0-9_]*\b/,
+  // The magic `description` value that grants national access on the server
+  // (`backend:lib/userScope.js`). Matching it is the whole rule; it cannot come from siteConfig.
+  /["'`]ecap\+ support["'`]|\becap\+ support\b/i,
+  // A Directus *role name* that exists in the live instance. Renaming it here would break admin
+  // access, so it is data, not branding.
+  /["'`]ECAP II["'`]/,
+  // Legacy storage keys, named only to prove the new app does not collide with or delete them.
+  /["'`]ecap\.(?:access_token|known_users|returning_user|first_login|ui_theme|sidebar_scroll)["'`]/,
+  /`ecap[-.][\w-]+`/,
 ];
 
 const MARKER = /\/\/\s*brand-ok:|#\s*brand-ok:/;

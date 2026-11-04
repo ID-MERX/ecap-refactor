@@ -3,7 +3,7 @@ coverage
 node_modules
 pnpm-lock.yaml
 public/brand
-test/contract/backend-geography.js
+test/contract/*.cjs
 docs
 test/fixtures
 docs

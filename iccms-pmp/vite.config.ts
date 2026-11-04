@@ -90,6 +90,14 @@ export default defineConfig(({ mode }) => {
       setupFiles: ["./test/setup.ts"],
       include: ["src/**/*.test.{ts,tsx}"],
       coverage: { reporter: ["text", "html"] },
+      // `src/config/env.ts` validates eagerly and throws on a missing variable, by design. Tests get
+      // explicit dummy values rather than relying on whatever `.env.local` happens to be on the
+      // machine — a test suite that only passes on the author's laptop is worse than no suite.
+      env: {
+        VITE_API_URL: "http://api.test",
+        VITE_DIRECTUS_URL: "http://directus.test",
+        VITE_DIRECTUS_INVITE_ROLE: "00000000-0000-0000-0000-000000000000",
+      },
     },
   };
 });

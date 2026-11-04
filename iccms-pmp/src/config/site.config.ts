@@ -23,8 +23,11 @@ export const siteConfig = {
      * may want its own domain here.
      */
     supportEmail: "info@bluecodeltd.com",
-    /** TODO(dev): confirm the official website. Only rendered on the login footer and support page. */
-    website: "https://example.org",
+    /**
+     * Deliberately absent (decision 28): there is no website to link to, and shipping a placeholder
+     * URL is worse than rendering nothing. When a real URL exists, add it here and render it from
+     * this field — never inline it in a component.
+     */
   },
   brand: {
     /** Neutral placeholders generated in Phase 2 — replace when the real brand assets arrive. */

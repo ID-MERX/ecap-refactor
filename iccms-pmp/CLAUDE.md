@@ -58,7 +58,7 @@ pnpm lint           # eslint (includes boundary rules)
 pnpm test           # vitest
 pnpm test:e2e       # playwright
 pnpm check:brand    # fails if branding/program strings are hardcoded outside src/config
-pnpm check:contract # fails if test/contract/backend-geography.js drifts from backend.patch
+pnpm check:contract # fails if test/contract/backend-geography.cjs drifts from backend.patch
 pnpm check          # all of the above except e2e — run before declaring anything done
 ```
 

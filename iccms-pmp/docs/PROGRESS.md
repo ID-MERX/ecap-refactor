@@ -119,6 +119,30 @@ Answers to `MIGRATION_PLAN.md` §10, plus decisions taken later.
 | 22 | TypeScript | **`strict: true` from day one**, plus `noUncheckedIndexedAccess`. Pinned to **TS 6.0.3**, not 7.0 — `typescript-eslint` refuses to run against TS 7 | 2026-11-04 |
 | 23 | Env vars | `VITE_`-only, zod-validated in `src/config/env.ts`; missing/malformed values throw at startup; removed vars and any `REACT_*` var abort startup | 2026-11-04 |
 | 24 | Sub-population shape | **Flat array** with one optional `registers` field per row (7 on household, 14 on VCA). Simpler to read than a grouped map and the per-screen split stays data, not code | 2026-11-04 |
+| 25 | District scope | **A district user sees only data tagged with their assigned district** — no cross-district visibility, no "all districts" option | 2026-11-04 |
+| 26 | `/districts` module | **Hidden from the sidebar AND route-guarded** for district users. Compare-across-districts has no meaning for a user who may only see one | 2026-11-04 |
+| 27 | District switcher | **Fixed label, not a dropdown.** A district user's scope *is* their district (decision 25), so there is nothing to switch to | 2026-11-04 |
+| 28 | PCZ website | **Not needed.** No website link is rendered anywhere; `siteConfig.organization.website` is removed rather than shipped as `example.org` | 2026-11-04 |
+| 29 | Brand assets | **Placeholders stay.** The developer replaces the four files in `public/brand/` later; no code change will be needed | 2026-11-04 |
+| 30 | Contract fixtures | Backend rule sets are copied **verbatim** from `backend.patch` into `test/contract/*.cjs` by `scripts/sync-backend-contract.mjs`; only the two `require` targets are rewritten so the frontend does not depend on `axios` | 2026-11-04 |
+| 31 | Access parity | `deriveAccess` mirrors `lib/userScope.js` rule for rule, and **82 tests run the backend's real code** against ours. The single deliberate divergence: an unknown `location` is `level:"none"` here and a raw district on the server | 2026-11-04 |
+| 32 | Router rebuild | The router is rebuilt and remounted when the access level changes, so a sign-out cannot leave the previous user's routes mounted | 2026-11-04 |
+
+## Access-rule resolutions
+
+Where the nine legacy rule sites disagreed (`docs/AUDIT.md` §4.4), `deriveAccess` follows the
+**backend**, because the backend is what actually enforces the data boundary. Every row below is
+pinned by a test in `src/core/access/__tests__/deriveAccess.test.ts`.
+
+| # | Legacy disagreement | Resolution |
+|---|---|---|
+| 1 | Case sensitivity of `description` | Normalised to lower case everywhere, as the backend does |
+| 2 | Role name vs description for admin | Union of both, plus `admin_access`, plus "role but no description and no location/province" — the backend's five conditions |
+| 3 | Three definitions of "support" | Only the literal `ecap+ support` grants national access; `Role: support` also lands national via the role-name path, as on the server |
+| 4 | `"Provincial Officer"` | Accepted — any description containing `province`/`provincial` makes a province user |
+| 5 | `VITE_DEFAULT_DISTRICT` fallback | **Removed.** No scope means `level:"none"` and a "no data scope assigned" screen |
+| 6 | Route guards | Permissions gate routes; unregistered means unreachable (finding S2) |
+| 7 | Sidebar group filter | Groups are derived from manifests; a fully hidden group disappears (finding S3) |
 
 ## Installed versions
 
@@ -164,7 +188,8 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 1 Audit | **done + verified** | 2026-11-04 | 23 module files, §1–§8 complete, 17 fixtures; **6,863/6,863 citations resolve** against the patched trees (`scripts/verify-audit.sh`) |
 | 0 Preparation | done | 2026-11-04 | `backend.patch` + `legacy-frontend.patch` verified |
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
-| 3 Core and shell | not started | | Blocked on nothing — open question 5 is now answered |
+| 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards; `pnpm check` green; 123 tests |
+| 4 Platform | not started | | Next |
 
 ## Module checklist
 
@@ -192,11 +217,10 @@ These were raised by the module audits. The ones marked **before Phase 2/3** blo
    (`deriveScope` returns exactly one `level` — `all` / `province` / `district` / `none`) and means
    the frontend should **not** union the nine legacy rule sites, which disagreed precisely because
    they tried to infer the tier from free text. See decision 19.
-6. **Should `/districts` be national + province only?** Still open (cosmetic, does not block Phase 3).
-7. **Should a district user be able to change district within their province?** Still open. Given
-   answer 5 (the tiers are disjoint), the likely answer is **no**: a district user's scope is their
-   assigned district, so a district selector should be a fixed label, not a dropdown. Confirm in
-   Phase 3 before the filter bar is built.
+6. ~~Should `/districts` be national + province only?~~ → **answered 2026-11-04**: hidden *and* guarded for district users (decision 26).
+7. ~~Should a district user be able to change district within their province?~~ → **answered
+   2026-11-04**: no. A district user's scope is their assigned district, so the selector is a fixed
+   label (decision 27).
 
 **Before Phase 5 (per module)** — collected in each `docs/audit/<module>.md` under "Open questions",
 and in `AUDIT.md` §6 (Surprises). The highest-impact ones:

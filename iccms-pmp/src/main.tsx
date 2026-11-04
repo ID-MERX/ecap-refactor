@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 
 import "./index.css";
 import { siteConfig } from "@/config";
-import { PlaceholderPage } from "@/app/PlaceholderPage";
+import { App } from "@/app/App";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("No #root element in index.html");
@@ -12,6 +12,6 @@ document.title = siteConfig.pageTitle();
 
 createRoot(root).render(
   <StrictMode>
-    <PlaceholderPage />
+    <App />
   </StrictMode>,
 );

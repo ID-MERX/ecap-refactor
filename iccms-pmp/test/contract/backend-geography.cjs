@@ -3,8 +3,7 @@
  *
  * The backend checkout in this workspace is deliberately left unpatched (patch-only files are
  * applied to throwaway copies, see `scripts/verify-audit.sh`), so this file is the *contract* the
- * frontend must satisfy — not a re-implementation. `src/config/program.config.test.ts` parses it and
- * asserts `programConfig.geography` is identical.
+ * frontend must satisfy — not a re-implementation. `src/config/program.config.test.ts` parses it and asserts `programConfig.geography` is identical.
  *
  * Regenerate with:  node scripts/sync-backend-contract.mjs
  */

@@ -19,7 +19,7 @@ export const siteConfig = {
     name: "PCZ",                           // decision 1
     shortName: "PCZ",
     supportEmail: "info@bluecodeltd.com",  // decision 16 — vendor address, revisit post-launch
-    website: "https://…",                  // TODO(dev): confirm
+    // no website field — decision 28
   },
   brand: {
     logo: "/brand/logo.svg",               // TODO(dev): files not supplied yet
