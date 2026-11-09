@@ -6,7 +6,8 @@
  */
 
 import { householdsManifest } from "@/modules/households";
+import { vcasManifest } from "@/modules/vcas";
 
 import type { ModuleManifest } from "@/core/modules";
 
-export const manifests: ReadonlyArray<ModuleManifest> = [householdsManifest];
+export const manifests: ReadonlyArray<ModuleManifest> = [householdsManifest, vcasManifest];

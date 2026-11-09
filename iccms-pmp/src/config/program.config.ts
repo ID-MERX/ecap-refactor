@@ -211,6 +211,14 @@ export function subPopulationDataKey(key: SubPopulationKey): string {
   return found?.dataKey ?? key;
 }
 
+const SERVICE_DOMAIN_RISK_TYPES = [
+  { value: "health_domain", label: "Missing health services", domain: "health_services" },
+  { value: "schooled_domain", label: "Missing schooled services", domain: "schooled_services" },
+  { value: "safe_domain", label: "Missing safe services", domain: "safe_services" },
+  { value: "stable_domain", label: "Missing stable services", domain: "stable_services" },
+  { value: "graduation_path", label: "Graduation ready (all 4)", domain: null },
+] as const;
+
 export const programConfig = {
   country: "Zambia",
 
@@ -237,14 +245,9 @@ export const programConfig = {
     "Other",
   ] as const,
 
-  /** Service-domain register labels and their legacy data fields, centralised for the risk module. */
-  householdRiskTypes: [
-    { value: "health_domain", label: "Missing health services", domain: "health_services" },
-    { value: "schooled_domain", label: "Missing schooled services", domain: "schooled_services" },
-    { value: "safe_domain", label: "Missing safe services", domain: "safe_services" },
-    { value: "stable_domain", label: "Missing stable services", domain: "stable_services" },
-    { value: "graduation_path", label: "Graduation ready (all 4)", domain: null },
-  ] as const,
+  /** Shared service-domain gaps used by household and VCA risk registers. */
+  householdRiskTypes: SERVICE_DOMAIN_RISK_TYPES,
+  vcaRiskTypes: SERVICE_DOMAIN_RISK_TYPES,
 
   flagCategories: [
     "Missing Data",
