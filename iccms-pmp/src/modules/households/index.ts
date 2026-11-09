@@ -12,6 +12,8 @@ export { normalizeHousehold } from "./api/schemas";
 /** Path builders, so no module inlines a URL string. */
 export const householdPaths = {
   register: () => "/households",
+  archived: () => "/households/archived",
+  risk: () => "/households/risk",
   profile: (householdId: string) => `/households/${encodeURIComponent(householdId)}`,
 } as const;
 

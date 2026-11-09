@@ -77,7 +77,7 @@ export const allDistricts: ReadonlyArray<{ district: District; province: Provinc
  * `docs/AUDIT.md` §4.1 item 5.
  */
 export type SubPopulation = {
-  readonly key: string;
+  readonly key: SubPopulationKey;
   /** Shown in the UI on every screen. Unprefixed: no legacy `C/` anywhere. */
   readonly label: string;
   /** Used by the assistant prompt and in documentation. */
@@ -224,6 +224,37 @@ export const programConfig = {
   geography,
 
   subPopulations,
+
+  /** Backend-stored de-registration values; keep exact spelling because the endpoint matches exactly. */
+  householdArchiveReasons: [
+    "Graduated (Household has met the graduation benchmarks in ALL domains)",
+    "Exited without graduation",
+    "Transferred to other OVC program",
+    "Lost to follow-up",
+    "Passed on",
+    "Aging without transition plan",
+    "Moved (Relocated)",
+    "Other",
+  ] as const,
+
+  /** Service-domain register labels and their legacy data fields, centralised for the risk module. */
+  householdRiskTypes: [
+    { value: "health_domain", label: "Missing health services", domain: "health_services" },
+    { value: "schooled_domain", label: "Missing schooled services", domain: "schooled_services" },
+    { value: "safe_domain", label: "Missing safe services", domain: "safe_services" },
+    { value: "stable_domain", label: "Missing stable services", domain: "stable_services" },
+    { value: "graduation_path", label: "Graduation ready (all 4)", domain: null },
+  ] as const,
+
+  flagCategories: [
+    "Missing Data",
+    "Invalid Data",
+    "Duplicate Record",
+    "Incorrect Service",
+    "Case Plan Mismatch",
+    "Other",
+  ] as const,
+  flagSeverities: ["Low", "Medium", "High", "Critical"] as const,
 
   /** The four service domains; every service page is one of these. */
   serviceDomains: ["Schooled", "Healthy", "Safe", "Stable"] as const,

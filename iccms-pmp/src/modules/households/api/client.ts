@@ -65,7 +65,8 @@ export async function fetchHouseholdRegister(window: RegisterWindow): Promise<Re
 
   const limited = raw.slice(0, MAX_ROWS);
   return {
-    rows: limited.map(normalizeHousehold),
+    // Rows without an identifier cannot have a stable React key or safe profile link.
+    rows: limited.map(normalizeHousehold).filter((row) => row.householdId !== ""),
     truncated: raw.length > MAX_ROWS,
     reportedTotal: Number.isFinite(reportedTotal) ? reportedTotal : null,
   };

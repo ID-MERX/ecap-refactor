@@ -1,15 +1,14 @@
-import { Home } from "lucide-react";
+import { Archive, Home } from "lucide-react";
 
 import type { ModuleManifest } from "@/core/modules";
 
+import { HouseholdArchivedPage } from "./routes/HouseholdArchivedPage";
+import { HouseholdProfilePage } from "./routes/HouseholdProfilePage";
 import { HouseholdRegisterPage } from "./routes/HouseholdRegisterPage";
+import { HouseholdRiskPage } from "./routes/HouseholdRiskPage";
+import { LegacyProfileRedirect } from "./routes/LegacyProfileRedirect";
 
-/**
- * The households module.
- *
- * Only the active register is registered in Phase 4 — it is the pilot that proves the platform. The
- * archived and risk registers, and the profile page, land in Phase 5 as their own routes.
- */
+/** The active and archived registers, service-domain risk view, and scoped record profile. */
 export const householdsManifest: ModuleManifest = {
   id: "households",
   feature: "module.households",
@@ -18,10 +17,30 @@ export const householdsManifest: ModuleManifest = {
     {
       path: "/households",
       component: HouseholdRegisterPage,
-      // Every legacy household URL keeps working; old notification and email links must not 404.
       redirects: ["/registers/households"],
     },
+    {
+      path: "/households/archived",
+      component: HouseholdArchivedPage,
+    },
+    {
+      path: "/households/risk",
+      component: HouseholdRiskPage,
+      redirects: ["/registers/household-risk"],
+    },
+    {
+      path: "/households/:householdId",
+      component: HouseholdProfilePage,
+    },
+    {
+      path: "/profile/household-details",
+      component: LegacyProfileRedirect,
+    },
   ],
-  nav: [{ label: "Households", to: "/households", icon: Home }],
+  nav: [
+    { label: "Households", to: "/households", icon: Home },
+    { label: "Archived households", to: "/households/archived", icon: Archive, group: "Archived" },
+    // Risk register remains unlisted, matching the legacy page's URL-only access.
+  ],
   minScope: "district",
 };
