@@ -32,16 +32,30 @@ export type Household = {
   caseworkerName: string | null;
   screened: string | null;
   lastServiceDate: string | null;
+  archivedOn: string | null;
+  reason: string | null;
   /** Sub-population flags, keyed by the `program.config` key. */
   flags: Record<string, unknown>;
 };
 
-const ID_KEYS = ["household_id", "householdId", "hh_id", "id"] as const;
+const ID_KEYS = [
+  "household_id",
+  "householdId",
+  "hh_id",
+  "hhid",
+  "unique_id",
+  "uid",
+  "household_code",
+  "id",
+] as const;
 const CASEWORKER_KEYS = ["caseworker_name", "cwac_member_name"] as const;
 
 export function normalizeHousehold(raw: Record<string, unknown>): Household {
   return {
-    householdId: String(pick(raw, ID_KEYS) ?? ""),
+    // Preserve raw field names for sub-population predicates and any legacy field not yet promoted to
+    // the domain shape. Canonical properties below win if a source key collides.
+    ...raw,
+    householdId: asString(pick(raw, ID_KEYS)) ?? "",
     homeAddress: asString(pick(raw, ["homeaddress", "home_address"])),
     facility: asString(pick(raw, ["facility"])),
     province: asString(pick(raw, ["province"])),
@@ -50,6 +64,18 @@ export function normalizeHousehold(raw: Record<string, unknown>): Household {
     caseworkerName: asString(pick(raw, [...CASEWORKER_KEYS])),
     screened: asString(pick(raw, ["screened"])),
     lastServiceDate: asString(pick(raw, ["last_service_date", "lastServiceDate"])),
+    archivedOn: asString(
+      pick(raw, [
+        "de_registration_date",
+        "archived_on",
+        "archivedOn",
+        "date_archived",
+        "updated_at",
+      ]),
+    ),
+    reason: asString(
+      pick(raw, ["de_registration_reason", "reason", "archived_reason", "case_status", "status"]),
+    ),
     flags: raw,
   };
 }

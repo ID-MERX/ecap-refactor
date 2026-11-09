@@ -5,21 +5,14 @@
  * legacy page declared its columns four times and the four disagreed.
  */
 
+import { subPopulationsFor } from "@/config";
 import type { ColumnDef } from "@/platform/data-table/types";
 import type { FilterDef } from "@/platform/filters/types";
 
 import type { Household } from "../api/schemas";
 
 /** The seven sub-populations the household register exposes (decision 13, `subPopulationsFor`). */
-export const HOUSEHOLD_SUB_POPULATIONS = [
-  "calhiv",
-  "hei",
-  "cwlhiv",
-  "agyw",
-  "csv",
-  "cfsw",
-  "abym",
-] as const;
+export const HOUSEHOLD_SUB_POPULATIONS = subPopulationsFor("household");
 
 export const householdColumns: ReadonlyArray<ColumnDef<Household>> = [
   {
@@ -121,10 +114,10 @@ export const householdFilters: ReadonlyArray<FilterDef> = [
     allValue: "All",
   },
   ...HOUSEHOLD_SUB_POPULATIONS.map(
-    (key) =>
+    ({ key, label }) =>
       ({
         id: key,
-        label: key.toUpperCase(),
+        label,
         type: "subPopulation" as const,
         key,
       }) satisfies FilterDef,

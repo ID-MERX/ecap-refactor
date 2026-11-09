@@ -9,7 +9,9 @@ describe("normalizeHousehold", () => {
     expect(normalizeHousehold({ household_id: "HH1" }).householdId).toBe("HH1");
     expect(normalizeHousehold({ householdId: "HH2" }).householdId).toBe("HH2");
     expect(normalizeHousehold({ hh_id: "HH3" }).householdId).toBe("HH3");
+    expect(normalizeHousehold({ uid: "HH4" }).householdId).toBe("HH4");
     expect(normalizeHousehold({ id: 42 }).householdId).toBe("42");
+    expect(normalizeHousehold({ household_id: "  HH5  " }).householdId).toBe("HH5");
   });
 
   it("prefers household_id over id when both exist", () => {

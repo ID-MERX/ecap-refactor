@@ -4,9 +4,11 @@ Updated at the end of every session. Newest entries at the top of each section.
 
 ## Current phase
 
-**Phase 1 — Audit: COMPLETE (2026-11-03).** Next: **Phase 2 — Scaffold and tooling**.
-Phase 0 items are assumed done by the developer (§Phase 0), with one exception recorded under
-"Backend asks".
+**Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
+**Phase 5 — Remaining modules: in progress.** The first selected slice extends `households` with the
+archived/risk registers and scoped profile. The implementation and automated checks are complete;
+remaining checklist items are manual/live parity, MSW/Playwright availability, and the shared search-provider
+gap. Next in the plan after those household follow-ups is `vcas`.
 
 ## Phase 1 checkpoints
 
@@ -131,6 +133,8 @@ Answers to `MIGRATION_PLAN.md` §10, plus decisions taken later.
 | 34 | Backend-leaning work | **Standing principle:** any function that requires downloading whole registers (global search, district aggregates, dashboard rollups, exports over 260k rows) moves to the backend rather than being optimised in the browser. Recorded as backend asks, not worked around | 2026-11-04 |
 | 35 | Module manifest types | `ModuleManifest` types live in `src/core/modules` (types only), because a module cannot import `app` without breaking the layer rule. The registry that assembles routes stays in `app` | 2026-11-04 |
 | 36 | Table state | Filters, sort and page live in the URL (`nuqs`). `district` and `search` are no longer read-only-on-mount | 2026-11-04 |
+| 37 | Household profile PII | Mask caregiver/member names and phone numbers in the household profile; do not include those fields in new flag payloads | 2026-11-03 |
+| 38 | Household profile flags | Any signed-in user may create/resolve flags **only after** the household has been matched in their scoped active/archive register. Flag list is filtered by household ID. No client-side notification fan-out; defer to a backend flow | 2026-11-03 |
 
 ## Access-rule resolutions
 
@@ -194,11 +198,22 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | not started | | Next, one module per session |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Household extension routes added: `/households/archived`, `/households/risk`, `/households/:householdId`; scoped profile discovery; PII masking; flags filtered by household and create/resolve controls. **Still open:** Playwright/live side-by-side verification, search provider, full audit checkbox pass, and backend enforcement/notifications. Next module by plan: `vcas` after household follow-ups close |
 
-## Module checklist
+## Module checklist — households extension (Phase 5)
 
-(copy the Phase 5 per-module checklist here for each module as it starts)
+- [x] `docs/audit/households.md` and the household endpoint catalogue re-read; legacy pages identified in the audit.
+- [x] Archived register and profile API calls, normalisation, query keys; scoped before profile by-ID calls.
+- [x] Archived register table/filters/export and risk table/export; profile sections and flags.
+- [x] Route params, legacy profile query redirect, archived/risk legacy redirects; route pages remain below ~250 lines.
+- [x] Manifest feature flag, nav for archived register, and module routes. Risk register remains URL-only, as in legacy.
+- [x] Unit/model and rendered-route tests; confirms profile PII masking and no detail/flag requests for out-of-scope IDs.
+- [ ] MSW handlers from `test/fixtures` (tests currently use `vi.stubGlobal`; MSW is not installed in this checkout).
+- [ ] Playwright smoke test (Playwright/browser not installed in this checkout).
+- [ ] Manual comparison against a live legacy/backend session (not available during this implementation).
+- [ ] Household search provider (platform search palette/provider is still a Phase 4 gap).
+- [ ] Tick the relevant audit-file boxes after the live parity review; notifications require backend Flow.
+- [x] `pnpm check` green on the current tree (212 tests; typecheck, lint, format, brand/contract/fixtures checks, and production build included).
 
 ## Open questions for the developer (carried from the audit)
 
@@ -266,7 +281,7 @@ Gaps found that need backend work (`MIGRATION_PLAN.md` §8). Status as of this s
 | 2 | Enforce data scope server-side (S9) | **Open.** 35/69 endpoints trust a caller-supplied district, 7 ignore district, 10 are by-ID with no ownership check | `AUDIT.md` §3.2 |
 | 3 | Explicit roles and scopes on the Directus user instead of free text | **Open.** 9 client-side rule sites infer scope from `description`/`title`/`location` | `AUDIT.md` §4.4 |
 | 4 | `GET /search?q=&types=&limit=` scoped to the caller | **Open.** Global search downloads whole registers today | `AUDIT.md` §5.3 |
-| 5 | By-ID endpoints for records passed through `location.state` (mother index, service records, caseworkers) | **Open** — blocked only for some records; `/etl/services/:type/record-detail` may cover service records | each module's "Links in / out" |
+| 5 | By-ID endpoints for records passed through `location.state` (mother index, service records, caseworkers) | **Open.** Household profile still has to discover the row in the scoped active/archive lists; only then are detail requests enabled. Ask for a household-by-ID endpoint with server-side ownership checks | `docs/audit/households.md`, profile questions 1–2 |
 | 6 | Refresh tokens or cookie-mode sessions | **Open.** Only the access token is kept; no refresh call exists | `AUDIT.md` §4.2, S6 |
 | 7 | Assistant system prompt moved server-side | **Open.** Prompt is in `src/lib/ai-service.ts:30-70` and includes off-programme districts | `AUDIT.md` §6.11 |
 | 8 | Server-side pagination/filtering for large registers | **Open, and now urgent**: `/household/all-households` and `/child/vcas-assessed-register` have no ORDER BY/LIMIT at 260k rows | `AUDIT.md` §6.6 |
@@ -274,6 +289,7 @@ Gaps found that need backend work (`MIGRATION_PLAN.md` §8). Status as of this s
 | 10 | **New:** a real chat table (sender, recipient, body, file, priority, read_at) to replace Directus notifications, and a rule for who may message whom | **Open** | `docs/audit/support.md` questions 1–2 |
 | 11 | **New:** a per-district aggregate endpoint so `/districts` need not download every register plus N count calls | **Open** | `docs/audit/districts.md` |
 | 12 | **New:** signed short-lived URLs for downloads, SSE and assets instead of `?token=` / `?access_token=` | **Open** — the token leaks into logs and history today | `AUDIT.md` §3.1.2, §4.2 |
+| 13 | **New:** server-side scope enforcement on Directus flag list/create/resolve and notification fan-out via a backend Flow | **Open.** The UI verifies the household is in the user's scoped register and filters flags by household ID, but Directus permissions must enforce ownership too | `docs/audit/households.md`, profile flag form and Backend asks |
 
 ## Scripts added this session
 
