@@ -5,11 +5,8 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** The `households` extension and VCAS module are merged; HTS implementation and full-project validation are complete. Live API parity review remains.
-The caregiver service-gap register and Services module are implemented in PR #7 (commits `61eba9b`
-and `120c308`; [PR #7](https://github.com/ID-MERX/ecap-refactor/pull/7)). Check GitHub for its current
-merge state. Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver
-audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
+**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services and HTS are merged; PMTCT is implemented and full-project validation passes. Live API parity review remains.
+Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
 Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
 and wait for approval; keep one module per session.
 
@@ -208,7 +205,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Households and VCAS merged. Caregivers and Services are implemented on this branch. Services includes district-fanned registers, selected/latest detail semantics, rolling filters plus FY cohort summaries, safe export, a read-only VCA overview, and legacy redirects. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services and HTS are merged. PMTCT is implemented on this branch with scoped mother/HEI lists, backend date-bound requests, and a linked profile. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -368,3 +365,14 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [x] Focused HTS tests cover scope boundaries, province fan-out, returned-row revalidation, ID precedence/privacy allowlist, result classification, strict date parsing, FY-window metrics/risk filtering, and routes/legacy redirects.
 - [ ] Backend follow-ups: enforce caller-derived scope on `/household/hts-register-by-district/:district`; add a scoped HTS by-ID endpoint (the current profile fallback downloads each allowed district); add server-side FY/custom filtering and pagination. The client-side 20,000 retained-row cap does not limit unpaginated backend transfer size.
 - [x] Full project `pnpm check` passed (typecheck, lint, format, 253 tests, brand/contract/fixture checks, and production build). Live API response-parity review remains to be done.
+
+## Module checklist — PMTCT (Phase 5)
+
+- [x] `/pmtct` and `/pmtct/:id` registered behind `records.view` and district-or-higher module scope; legacy register/profile routes redirect and preserve query parameters.
+- [x] Mother and HEI API clients fan out only over configured permitted districts, send FY/custom `from`/`to` bounds for backend filtering, validate each returned row's district, and cap retained rows per district.
+- [x] Canonical profile ID is `ecap_id` first, falling back to `pmtct_id`; profile discovery uses scoped mother-register requests and joins scoped infant rows by shared `pmtct_id`.
+- [x] Register, charts, search, pagination, privacy-conscious CSV, scoped profile, and legacy redirects implemented. Maternal HIV positivity follows the legacy definitional rule.
+- [x] PMTCT data queries are marked `persist: false`; names/contact data are only shown on the scoped profile and are not included in exports.
+- [x] Focused tests cover ID precedence, date/outcome parsing, backend date bounds, district scope/revalidation, profile/HEI joining, metrics, and manifest routes.
+- [ ] Backend follow-ups: enforce authenticated caller scope, implement FY/custom filtering (current handlers ignore `from`/`to`), add pagination, and provide a scoped by-ID endpoint. The current client retention cap does not limit response transfer.
+- [x] Full project `pnpm check` passed (typecheck, lint, formatting, 259 tests, brand/contract/fixture checks, and production build). Live API response-parity review remains.
