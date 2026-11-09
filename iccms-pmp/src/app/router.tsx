@@ -15,8 +15,9 @@ import { RequireAuth, RequirePermission, RequireScope } from "./components/Route
 import { RedirectIfAuthenticated } from "./components/RedirectIfAuthenticated";
 import { NotFoundScreen } from "./components/NotFoundScreen";
 import { AppShell } from "./layouts/AppShell";
+import { UrlStateBoundary } from "./components/NuqsProvider";
 import { buildRoutes } from "./registry";
-import type { ModuleManifest } from "./manifest";
+import type { ModuleManifest } from "@/core/modules";
 import { HomePage } from "./routes/HomePage";
 
 export function createAppRouter(
@@ -56,7 +57,9 @@ export function createAppRouter(
       element: (
         <RequireAuth>
           <RequireScope>
-            <AppShell manifests={manifests} />
+            <UrlStateBoundary>
+              <AppShell manifests={manifests} />
+            </UrlStateBoundary>
           </RequireScope>
         </RequireAuth>
       ),

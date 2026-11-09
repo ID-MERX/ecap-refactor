@@ -1,11 +1,12 @@
 /**
  * Every module's manifest, in navigation order.
  *
- * Empty in Phase 3 on purpose: there is nothing to show until a module exists. Phase 5 appends one
- * entry per module, and the router and sidebar pick it up with no other change — which is the whole
- * point of the registry.
+ * Adding a module is one line here plus its folder — the router, sidebar, command palette and legacy
+ * redirects are all derived from this list.
  */
 
-import type { ModuleManifest } from "./manifest";
+import { householdsManifest } from "@/modules/households";
 
-export const manifests: ReadonlyArray<ModuleManifest> = [];
+import type { ModuleManifest } from "@/core/modules";
+
+export const manifests: ReadonlyArray<ModuleManifest> = [householdsManifest];

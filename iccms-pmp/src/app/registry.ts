@@ -15,7 +15,7 @@ import {
   type ModuleManifest,
   type NavItem,
   type RouteDefinition,
-} from "./manifest";
+} from "@/core/modules";
 
 export type ResolvedNavItem = NavItem & { moduleId: string };
 

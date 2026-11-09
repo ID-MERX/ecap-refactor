@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 
 import { deriveAccess } from "@/core/access/deriveAccess";
 import type { Access } from "@/core/access/types";
-import type { ModuleManifest } from "@/app/manifest";
+import type { ModuleManifest } from "@/core/modules";
 import { buildNav, buildRoutes, visibleModules } from "@/app/registry";
 
 const Noop = () => null;
