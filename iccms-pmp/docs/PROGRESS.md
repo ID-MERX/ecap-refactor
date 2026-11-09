@@ -6,9 +6,12 @@ Updated at the end of every session. Newest entries at the top of each section.
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
 **Phase 5 — Remaining modules: in progress.** The `households` extension and VCAS module are merged.
-The `caregivers` service-gap register (`/caregivers/risk`) is implemented on this branch. The next
-module in the plan is `services`; live/manual parity, MSW/Playwright, audit checkbox review, backend
-pagination/enforcement, and the shared search-provider gap remain open across modules.
+The caregiver service-gap register and Services module are implemented in PR #7 (commits `61eba9b`
+and `120c308`; [PR #7](https://github.com/ID-MERX/ecap-refactor/pull/7)). Check GitHub for its current
+merge state. Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver
+audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
+Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
+and wait for approval; keep one module per session.
 
 ## Phase 1 checkpoints
 
@@ -328,6 +331,7 @@ Gaps found that need backend work (`MIGRATION_PLAN.md` §8). Status as of this s
 | 13 | **New:** server-side scope enforcement on Directus flag list/create/resolve and notification fan-out via a backend Flow | **Open.** The UI verifies the household is in the user's scoped register and filters flags by household ID, but Directus permissions must enforce ownership too | `docs/audit/households.md`, profile flag form and Backend asks |
 | 14 | **New:** repair the broken VCA profile-by-ID endpoint and enforce scope/ownership on VCA service, case-plan, domain, referral and flag reads/writes | **Open.** The profile verifies membership in scoped active/archive registers before issuing by-ID reads, but the current backend endpoints lack server-side ownership checks and the profile endpoint reads the wrong route parameter | `docs/audit/vcas.md` profile endpoints and questions 1–3 |
 | 15 | **New:** provide a scoped server-side caregiver domain-coverage/pagination endpoint (or pagination on household and caregiver-service reads) | **Open.** The new screen scopes district requests and caps retained rows, but existing handlers return unbounded service collections; a client cap cannot constrain response transfer | `docs/audit/caregivers.md` performance question 6 |
+| 16 | **New:** enforce auth/scope on Services endpoints, provide exact historical service detail, secure duplicate-review writes, and add bounded fan-out/pagination support | **Open.** The frontend performs district fan-out and validation, but backend handlers still trust caller-supplied districts; detail returns latest service only; duplicate-review mutation is intentionally omitted | `docs/audit/services.md` |
 
 ## Scripts added this session
 
