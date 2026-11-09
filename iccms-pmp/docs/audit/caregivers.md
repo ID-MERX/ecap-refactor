@@ -2,6 +2,20 @@
 
 > Legacy routes → new routes: `/registers/caregiver-risk` → `/caregivers/risk` · Plan: MIGRATION_PLAN.md §5 row "caregivers"
 
+## Rebuild decisions and implementation status
+
+The Phase 5 proposal was approved with these resolutions:
+
+- Add a Registers navigation entry labelled “Caregiver service gaps”; add the cross-link from the caregiver-services page when the Services module is built. No search-provider entry was approved.
+- Scope household and caregiver-service reads to the user's effective geography. The caregiver-services endpoint is called once per allowed district, and returned rows must carry that same district. The existing household query is reused and its rows are filtered to allowed configured districts before joining.
+- Count caregiver service events only inside the selected FY/custom date window. The endpoint ignores date params, so service rows are filtered client-side; rows without a recognized service date are excluded and disclosed. All time includes available history.
+- Keep the four configured domains; `hiv_services` and other service columns do not count.
+- Rows are households. Keep the caregiver-service-gap terminology but say “households” in the count; show caregiver names as “Hidden for privacy” and omit names from CSV.
+- Backend remains unchanged. A server-side aggregate/pagination endpoint remains a follow-up; the client cap does not bound response bytes.
+- Empty/JSON-object category semantics have not been confirmed against production payloads. Current implementation recursively treats an object as provided only if it contains a meaningful value.
+
+The detailed legacy checkboxes below remain for the later live parity/audit pass; implementation coverage is tracked in `PROGRESS.md`.
+
 ## Legacy files
 
 | File | Lines | Role |
@@ -167,12 +181,12 @@ Gap types (`legacy:src/pages/CaregiverRiskRegister.tsx:48-54`, quoted exactly):
 - [ ] Browser APIs: `Blob`, `URL.createObjectURL`, DOM anchor click for the CSV download (`legacy:src/pages/CaregiverRiskRegister.tsx:210-218`).
 - [ ] Module boundary note for the rebuild: this page consumes household rows (households module data) and caregiver service rows (services module data). Import only from `@/modules/households` / `@/modules/services` `index.ts` (shared `queryOptions`, path builders), keep the domain-coverage computation in `src/modules/caregivers/model/` with unit tests.
 
-## Open questions for the developer
+## Resolved decisions and remaining questions
 
-1. The route is orphaned (no inbound link anywhere). Add a nav entry, a GlobalSearch entry, and/or a link from the caregiver services page (as the unrouted `VcaServicesDashboard` does for the VCA register, `legacy:src/pages/VcaServicesDashboard.tsx:678-715`)?
-2. Should the services side be FY-scoped (service date in FY)? Today only households are FY-filtered (`legacy:src/pages/CaregiverRiskRegister.tsx:111,117`).
-3. Should data be fetched with the user's scoped district (platform/scope) instead of national + client-side lock? Provincial users currently see every district.
-4. Is `hiv_services` intentionally excluded from the four domains (`legacy:src/pages/CaregiverRiskRegister.tsx:155-158`)?
-5. Rows are households, labels say caregivers. Keep "caregiver" wording (from config) or relabel?
-6. Can the backend provide a server-side domain-coverage endpoint to avoid downloading the national register plus all caregiver service rows?
-7. Should a parsed JSON object value count as "provided" in `isCategoryProvided` (`legacy:src/lib/data-validation.ts:42-54`)?
+1. **Navigation:** add a Registers item; defer the link from `/services/caregiver` until the Services module exists. No caregiver search provider for now.
+2. **FY:** filter service events to the selected FY/custom window; disclose/exclude undated rows. All time counts all available service rows.
+3. **Scope:** use effective scope. Service requests are district-by-district with row-tag validation; household rows are filtered to allowed districts. No district user gets an all-district filter or request.
+4. **HIV:** intentionally excluded; the model remains the four configured domains.
+5. **Labels/privacy:** rows are households, counted as households. Keep caregiver-service-gap terminology; mask names in the table and omit them from CSV.
+6. **Backend:** no backend changes in this migration. Keep the response cap and track a scoped aggregate/pagination endpoint as a backend ask; current API response transfer is still unbounded.
+7. **Category objects:** still needs confirmation against production payloads. The implementation recursively checks object values and counts only meaningful values.

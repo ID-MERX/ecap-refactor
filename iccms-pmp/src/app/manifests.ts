@@ -5,9 +5,14 @@
  * redirects are all derived from this list.
  */
 
+import { caregiversManifest } from "@/modules/caregivers";
 import { householdsManifest } from "@/modules/households";
 import { vcasManifest } from "@/modules/vcas";
 
 import type { ModuleManifest } from "@/core/modules";
 
-export const manifests: ReadonlyArray<ModuleManifest> = [householdsManifest, vcasManifest];
+export const manifests: ReadonlyArray<ModuleManifest> = [
+  householdsManifest,
+  vcasManifest,
+  caregiversManifest,
+];
