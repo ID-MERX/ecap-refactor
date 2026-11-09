@@ -225,3 +225,12 @@ The labels "ECAP ID", "ECAP Question", "Date Enrolled ECAP" contain the program 
 6. **HIV status for mothers:** keep hardcoded "HIV Positive" (definitional) or read `result_of_hiv_test`/`result_r_nr` if present?
 7. **PII persistence:** set `meta: { persist: false }` on PMTCT queries (names, phones, addresses)?
 8. **Scope:** backend trusts the district param (Backend ask: enforce on the server).
+
+## Phase 5 implementation decisions and status (2026-11-03)
+
+- Canonical profile route ID: prefer `ecap_id`; fall back to `pmtct_id` only when the former is absent. The legacy query-string redirect carries the ID into `/pmtct/:id` and preserves other filters.
+- The app sends the platform FY/custom bounds as `from` and `to` to both mother and child register endpoints. It does not filter locally. Current handlers are documented as ignoring the bounds; backend support remains a required follow-up.
+- PMTCT maternal HIV status remains the legacy definitional positive status.
+- The scoped profile discovers the mother through allowed district register requests, then loads HEIs through the same allowed scope and joins on `pmtct_id`. No unscoped by-ID fallback is used.
+- Province/national scopes fan out only to configured districts; district users remain fixed to their assigned district; each row is revalidated against the requested district. Query results are transient (`persist: false`); CSV contains only ID, type, enrolment date, facility and district.
+- Server-side authorization/scope, date filtering, pagination, and a dedicated by-ID endpoint remain backend asks. The frontend currently caps retained rows at 20,000 per endpoint/district, but this does not reduce backend transfer size.
