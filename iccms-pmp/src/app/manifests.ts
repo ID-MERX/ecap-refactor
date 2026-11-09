@@ -7,6 +7,7 @@
 
 import { caregiversManifest } from "@/modules/caregivers";
 import { householdsManifest } from "@/modules/households";
+import { htsManifest } from "@/modules/hts";
 import { servicesManifest } from "@/modules/services";
 import { vcasManifest } from "@/modules/vcas";
 
@@ -17,4 +18,5 @@ export const manifests: ReadonlyArray<ModuleManifest> = [
   vcasManifest,
   caregiversManifest,
   servicesManifest,
+  htsManifest,
 ];
