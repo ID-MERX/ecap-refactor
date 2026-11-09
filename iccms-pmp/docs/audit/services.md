@@ -1,3 +1,34 @@
+# Services — Phase 5 implementation notes
+
+## Approved implementation decisions (2026-11-03)
+
+The earlier route-by-route legacy audit remains below. Implementation follows the approved scope here:
+
+- Config-driven VCA, household, and caregiver service registers at `/services/:type`, with query-preserving redirects from `/vca-services`, `/household-services`, and `/caregiver-services`.
+- `/services/household-services` remains an explicit static legacy-compatible route and redirects to the household register.
+- Entity detail uses `/services/:type/:entityId?date=…`. The selected visit is retained from the scoped records endpoint; the broad joined detail endpoint is used only for the latest service and is presented with a clear latest-service label when its date differs. Detail response fields are allowlisted; joined payloads and PII are never put in query data or rendered.
+- The read-only VCA overview is `/services/vca/overview`. Duplicate-review mutations are intentionally absent.
+- Access requires signed-in district-or-higher scope. District scope is fixed. A province is queried one configured district at a time and merged. Every record row is checked against the requested district; no province/district request uses an all-district sentinel.
+- The platform FY/custom window applies to cohort summaries. A separate rolling 30/90/365/all-date selector applies to service-register records. The UI discloses each endpoint's actual window; timeseries and distribution are clearly identified as fixed last-12-month and last-90-day views.
+- Per-type domain labels and their backend columns are mapped explicitly. Only the supported `1`/`active` status mapping is applied. Names, phone numbers, caseworker details, raw joined payloads, and raw source-payload views are omitted.
+- List, detail, and export data is not persisted in IndexedDB. Export uses scoped district fan-out, an explicit field allowlist, and a bounded client cap.
+
+## Backend follow-ups (backend unchanged in this slice)
+
+1. Enforce authorization and effective district/province scope server-side for service records, summaries, timeseries, distribution, action queue, duplicate detection, export, and record-detail. Several handlers currently trust a caller-supplied district; frontend checks are defense-in-depth, not authorization.
+2. Add exact historical-visit lookup by a stable service-row identifier (or entity ID plus an unambiguous date/key). `/record-detail` currently returns only the entity's latest service and caregiver date ordering is lexical.
+3. Add permission and scope enforcement to duplicate-review write endpoints before exposing any review mutation. The VCA overview remains read-only meanwhile.
+4. Add bounded server pagination/aggregate endpoints for province fan-out and large registers. Current client-side caps bound retained results, not bytes transferred from a district endpoint.
+
+## Implementation surface
+
+- `src/modules/services/api/schemas.ts`, `client.ts`, and `queries.ts`: typed allowlist normalization, per-type domain columns, scope fan-out, district revalidation, aggregate queries, safe detail projection, bounded export.
+- `src/modules/services/routes/`: register, safe entity detail, read-only VCA overview, legacy redirect.
+- `src/modules/services/manifest.ts` and `src/app/manifests.ts`: gated routes and Registers navigation.
+- `src/modules/services/__tests__/schemas.test.ts`: normalization, field privacy, domain-column mapping, scope boundaries, per-district fan-out, and response-row revalidation.
+
+---
+
 # services — legacy audit
 
 > Legacy routes → new routes: `/vca-services`, `/household-services`, `/caregiver-services` → `/services/:type` (`type` = `vca` | `household` | `caregiver`); `/profile/{vca,household,caregiver}-service-details` → `/services/:type/:recordId`; `/services/household-services` (orphan, KEEP per decision 3) · Plan: MIGRATION_PLAN.md §5 row "services"  · *part `core`*

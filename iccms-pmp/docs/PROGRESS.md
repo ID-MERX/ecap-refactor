@@ -205,7 +205,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Households and VCAS merged. Caregivers added on this branch: scoped caregiver service-gap register, FY-windowed coverage, masked names, household profile links, and Registers navigation. Next by plan: Services. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend pagination/scope enforcement. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households and VCAS merged. Caregivers and Services are implemented on this branch. Services includes district-fanned registers, selected/latest detail semantics, rolling filters plus FY cohort summaries, safe export, a read-only VCA overview, and legacy redirects. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -339,3 +339,15 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 | `merge-audit-drafts.py` | Assembles `docs/audit/<module>.md` from the step-3 part drafts, verbatim |
 | `build-file-map.py` | Regenerates `AUDIT.md` §8 from the modules' "Legacy files" tables, so it cannot drift |
 | `draft-fixtures.py` | Regenerates `test/fixtures/*.json` from the endpoint catalogue, deterministically |
+
+## Module checklist — Services (Phase 5)
+
+- [x] Config-driven `/services/:type` VCA, household, caregiver registers and query-preserving legacy redirects; preserve `/services/household-services` as a static compatibility route.
+- [x] `/services/:type/:entityId?date=…` uses the entity ID as route key, resolves the selected row inside scope, keeps the selected visit date, and discloses when the backend's allowlisted detail belongs to the latest service instead.
+- [x] District users remain fixed to their district; provincial queries fan out per configured allowed district; rows are revalidated against requested district and all-district sentinels are avoided for scoped users.
+- [x] Platform FY/custom cohort summary and separate rolling 30/90/365/all records control are clearly distinguished. Summary dates are sent; record queries use rolling windows only, matching backend behavior.
+- [x] Type-specific domain options/column mappings, supported Active mapping, safe field-allowlist detail, privacy-conscious CSV, read-only `/services/vca/overview`, no duplicate-review writes.
+- [x] React Query module keys and transient non-persisted service payloads; schema/scope/fan-out tests added.
+- [ ] Backend follow-ups recorded in `docs/audit/services.md`: handler authorization and scope enforcement, exact historical visit lookup, duplicate-review write permission/scope, and bounded server pagination/aggregation.
+- [x] Complete validation passed: `pnpm check` (246 tests; typecheck, lint, formatting, brand/contract/fixture checks, and production build).
+- [ ] Review actual response parity with a live backend and add MSW/Playwright coverage when those test handlers are available.
