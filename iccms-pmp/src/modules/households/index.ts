@@ -2,12 +2,14 @@
  * Public surface of the households module.
  *
  * Other modules may import from here and nowhere else — `pnpm lint` enforces it (`boundaries/dependencies`
- * plus `no-restricted-imports`). Everything below is deliberately minimal: domain types and path
- * builders, not pages or queries.
+ * plus `no-restricted-imports`). Expose only stable domain types, shared query options, and path builders;
+ * never expose pages or internal transport details.
  */
 
 export type { Household } from "./api/schemas";
 export { normalizeHousehold } from "./api/schemas";
+export { householdRegisterQuery } from "./api/queries";
+export type { RegisterResult as HouseholdRegisterResult } from "./api/client";
 
 /** Path builders, so no module inlines a URL string. */
 export const householdPaths = {

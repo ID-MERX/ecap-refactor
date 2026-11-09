@@ -5,11 +5,13 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** The `households` extension is implemented; its live/manual
-parity, MSW/Playwright and search-provider follow-ups remain open. The next approved slice, `vcas`, is
-implemented on this branch with scoped active/archive registers, a FY-windowed service-domain risk
-register, and a scoped profile. VCA live/manual parity, MSW/Playwright, audit checkbox review and the
-shared search-provider gap remain open.
+**Phase 5 — Remaining modules: in progress.** The `households` extension and VCAS module are merged.
+The caregiver service-gap register and Services module are implemented in PR #7 (commits `61eba9b`
+and `120c308`; [PR #7](https://github.com/ID-MERX/ecap-refactor/pull/7)). Check GitHub for its current
+merge state. Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver
+audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
+Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
+and wait for approval; keep one module per session.
 
 ## Phase 1 checkpoints
 
@@ -139,6 +141,10 @@ Answers to `MIGRATION_PLAN.md` §10, plus decisions taken later.
 | 39 | VCA profile privacy and flags | Reuse the household profile policy: mask VCA/caregiver/member names and phone numbers; allow signed-in users to create/resolve only after scoped VCA discovery; omit PII from payloads and do not fan out notifications client-side | 2026-11-03 |
 | 40 | VCA province and district access | Query only exact configured districts within a user's effective scope (one request per district); never use the empty district path for district/province users | 2026-11-03 |
 | 41 | VCA risk service window | Match service events to the selected FY/custom window. Exclude events with missing or unrecognized dates and disclose this; All time mode includes all available history | 2026-11-03 |
+| 42 | Caregiver risk navigation | Add a Registers sidebar entry for the otherwise orphaned caregiver service-gap route; add a link from the caregiver services page when that Phase 5 module is built | 2026-11-03 |
+| 43 | Caregiver risk service window | Count caregiver service domains only when event dates fall inside the selected FY/custom range; exclude and disclose unparseable/missing dates. All time includes all available history | 2026-11-03 |
+| 44 | Caregiver risk privacy | Mask caregiver names in the table and omit names from CSV exports; rows remain household-level and link to the existing scoped household profile | 2026-11-03 |
+| 45 | Caregiver risk domain model | Keep the four configured service domains; exclude HIV and other service columns from this risk model | 2026-11-03 |
 
 ## Access-rule resolutions
 
@@ -202,7 +208,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Household extension landed and VCAS slice now added: scoped active/archive/risk registers and profile; district/province reads use explicit district requests; VCA service risk uses the selected FY window; profile PII is masked and flag actions require scoped profile discovery. **Still open:** live parity, MSW/Playwright, search provider, full audit checkbox pass, and backend enforcement/notifications. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households and VCAS merged. Caregivers and Services are implemented on this branch. Services includes district-fanned registers, selected/latest detail semantics, rolling filters plus FY cohort summaries, safe export, a read-only VCA overview, and legacy redirects. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -232,6 +238,21 @@ This phase proves the toolchain with the smallest possible dependency set.
 - [ ] Review/tick `docs/audit/vcas.md` parity items after manual comparison; flag permission enforcement and notification fan-out require backend work.
 - [ ] Decide the VCA derived PBFW labels: current profile shows directly configured sub-populations and deliberately does not infer PBFW from AGYW.
 - [x] `pnpm check` green on the current tree (231 tests; typecheck, lint, format, brand/contract/fixture checks, and production build included).
+
+## Module checklist — Caregivers (Phase 5)
+
+- [x] `docs/audit/caregivers.md`, the module inventory row, and caregiver endpoint catalogue reviewed; only the risk register is in this module.
+- [x] Scoped household query reused from the public households module surface; caregiver services queried by exact effective-scope districts and response rows validated against their requested district.
+- [x] Four-domain coverage join, date parser for ISO and legacy `DD-MM-YYYY`, five risk views, filters, pagination, sorting, and RFC-safe CSV implemented. HIV/other service fields are excluded.
+- [x] Service dates are filtered to the selected FY/custom range; missing/invalid dates are excluded and disclosed. All-time mode includes all returned history.
+- [x] Caregiver names display as a privacy placeholder and are omitted from CSV. Household IDs link through the existing scoped `/households/:householdId` profile path.
+- [x] Route `/caregivers/risk`, legacy query-preserving redirect, authenticated scope guard, Registers navigation, and model/route tests implemented. The planned link back to `/services/caregiver` is deferred until the Services module exists.
+- [ ] Shared backend aggregate/pagination endpoint; current client-side safety cap does not bound response bytes downloaded from each endpoint.
+- [ ] MSW fixture handlers and Playwright smoke test (not installed in this checkout); live/manual parity and audit checkboxes await a legacy/backend session.
+- [ ] Shared search provider remains a platform follow-up; do not search caregiver names.
+- [ ] Review caregiver endpoint permissions and district parameter enforcement with backend owners; backend is unchanged in this migration.
+- [ ] Confirm treatment of empty/JSON-object category values against production payloads; current helper recursively counts meaningful values.
+- [x] `pnpm check` green on the complete caregivers tree (240 tests; typecheck, lint, format, brand/contract/fixture checks, and production build included).
 
 ## Open questions for the developer (carried from the audit)
 
@@ -309,6 +330,8 @@ Gaps found that need backend work (`MIGRATION_PLAN.md` §8). Status as of this s
 | 12 | **New:** signed short-lived URLs for downloads, SSE and assets instead of `?token=` / `?access_token=` | **Open** — the token leaks into logs and history today | `AUDIT.md` §3.1.2, §4.2 |
 | 13 | **New:** server-side scope enforcement on Directus flag list/create/resolve and notification fan-out via a backend Flow | **Open.** The UI verifies the household is in the user's scoped register and filters flags by household ID, but Directus permissions must enforce ownership too | `docs/audit/households.md`, profile flag form and Backend asks |
 | 14 | **New:** repair the broken VCA profile-by-ID endpoint and enforce scope/ownership on VCA service, case-plan, domain, referral and flag reads/writes | **Open.** The profile verifies membership in scoped active/archive registers before issuing by-ID reads, but the current backend endpoints lack server-side ownership checks and the profile endpoint reads the wrong route parameter | `docs/audit/vcas.md` profile endpoints and questions 1–3 |
+| 15 | **New:** provide a scoped server-side caregiver domain-coverage/pagination endpoint (or pagination on household and caregiver-service reads) | **Open.** The new screen scopes district requests and caps retained rows, but existing handlers return unbounded service collections; a client cap cannot constrain response transfer | `docs/audit/caregivers.md` performance question 6 |
+| 16 | **New:** enforce auth/scope on Services endpoints, provide exact historical service detail, secure duplicate-review writes, and add bounded fan-out/pagination support | **Open.** The frontend performs district fan-out and validation, but backend handlers still trust caller-supplied districts; detail returns latest service only; duplicate-review mutation is intentionally omitted | `docs/audit/services.md` |
 
 ## Scripts added this session
 
@@ -320,3 +343,15 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 | `merge-audit-drafts.py` | Assembles `docs/audit/<module>.md` from the step-3 part drafts, verbatim |
 | `build-file-map.py` | Regenerates `AUDIT.md` §8 from the modules' "Legacy files" tables, so it cannot drift |
 | `draft-fixtures.py` | Regenerates `test/fixtures/*.json` from the endpoint catalogue, deterministically |
+
+## Module checklist — Services (Phase 5)
+
+- [x] Config-driven `/services/:type` VCA, household, caregiver registers and query-preserving legacy redirects; preserve `/services/household-services` as a static compatibility route.
+- [x] `/services/:type/:entityId?date=…` uses the entity ID as route key, resolves the selected row inside scope, keeps the selected visit date, and discloses when the backend's allowlisted detail belongs to the latest service instead.
+- [x] District users remain fixed to their district; provincial queries fan out per configured allowed district; rows are revalidated against requested district and all-district sentinels are avoided for scoped users.
+- [x] Platform FY/custom cohort summary and separate rolling 30/90/365/all records control are clearly distinguished. Summary dates are sent; record queries use rolling windows only, matching backend behavior.
+- [x] Type-specific domain options/column mappings, supported Active mapping, safe field-allowlist detail, privacy-conscious CSV, read-only `/services/vca/overview`, no duplicate-review writes.
+- [x] React Query module keys and transient non-persisted service payloads; schema/scope/fan-out tests added.
+- [ ] Backend follow-ups recorded in `docs/audit/services.md`: handler authorization and scope enforcement, exact historical visit lookup, duplicate-review write permission/scope, and bounded server pagination/aggregation.
+- [x] Complete validation passed: `pnpm check` (246 tests; typecheck, lint, formatting, brand/contract/fixture checks, and production build).
+- [ ] Review actual response parity with a live backend and add MSW/Playwright coverage when those test handlers are available.
