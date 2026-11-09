@@ -490,3 +490,16 @@ Masked (never read from the record): heading and "Individual Tested" `"Caregiver
 7. **QUESTION** Provincial users currently see all districts on the risk register. Should they be limited to their province (as `useEffectiveDistrict` would do)?
 8. **QUESTION** The masked heading says "Caregiver Name – Confidential" (`legacy:src/pages/HTSProfile.tsx:194,356`) although the tested individual may be an index client or a contact. Keep the masking text, make it a config domain term, or use a neutral "Name – Confidential"?
 9. **QUESTION** Should HTS query results be excluded from the persisted query cache (`meta: { persist: false }`) given they are health PII?
+
+## Phase 5 implementation status (2026-11-03)
+
+HTS is implemented in `src/modules/hts/` and registered in `src/app/manifests.ts`.
+
+- Approved route key is `ecap_id`, falling back to `client_number` only when absent. HTS pages do not add record-level global search.
+- Only the platform FY/custom window applies; the legacy local rolling-period control is not carried forward. The normalized `recordDate` is used for the client-side window because the endpoint does not accept FY/custom parameters.
+- HIV result parsing retains the legacy vocabulary and corrects the `non-reactive` positive-classification bug; ambiguous values are not treated as negative.
+- Profile IDs are discovered only through the same scoped district-register requests. There is no unscoped national or by-ID fallback. A requested matching ID may be retained past the 20,000-row client retention cap, but the endpoint still transfers the full unpaginated district response.
+- Names, phone/address, caseworker names, comments, and raw joined fields are excluded from normalized HTS data. Query results are marked non-persistent and CSV fields are explicitly allowlisted.
+- District access is locked to the assigned district; province/national access fans out only over configured districts and every row is checked against the requested district. This is frontend defense in depth, not backend authorization.
+
+Backend follow-ups: enforce scope from the authenticated caller for `GET /household/hts-register-by-district/:district`; provide a scoped by-ID lookup; support server-side FY/custom windows and pagination. Full validation status is tracked in `docs/PROGRESS.md`.

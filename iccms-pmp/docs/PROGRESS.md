@@ -5,7 +5,7 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** The `households` extension and VCAS module are merged.
+**Phase 5 — Remaining modules: in progress.** The `households` extension and VCAS module are merged; HTS implementation and full-project validation are complete. Live API parity review remains.
 The caregiver service-gap register and Services module are implemented in PR #7 (commits `61eba9b`
 and `120c308`; [PR #7](https://github.com/ID-MERX/ecap-refactor/pull/7)). Check GitHub for its current
 merge state. Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver
@@ -355,3 +355,16 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [ ] Backend follow-ups recorded in `docs/audit/services.md`: handler authorization and scope enforcement, exact historical visit lookup, duplicate-review write permission/scope, and bounded server pagination/aggregation.
 - [x] Complete validation passed: `pnpm check` (246 tests; typecheck, lint, formatting, brand/contract/fixture checks, and production build).
 - [ ] Review actual response parity with a live backend and add MSW/Playwright coverage when those test handlers are available.
+
+
+## Module checklist — HTS (Phase 5)
+
+- [x] `/hts`, `/hts/risk`, and `/hts/:clientId` registered behind `records.view` and district-or-higher module scope; legacy register, risk, and profile URLs redirect while preserving non-ID query parameters.
+- [x] API requests one configured district at a time, fixes district users to their assigned district, fans province/national scope over configured districts, and revalidates returned district values before normalization/retention.
+- [x] HTS payloads are normalized through an explicit field allowlist; names, phone/address, caseworker names, free-text comments, and raw joined payloads are excluded. CSV exports use explicit allowlisted columns.
+- [x] HIV-result normalization corrects `non-reactive`; date parsing is strict; the shared platform FY/custom window applies to register and risk data; risk views include ART-unlinked positives, pending/unknown outcomes, and recent positives.
+- [x] Register/charts, risk register, scoped profile discovery, filters, pagination, and CSV exports implemented. Profile ID lookup only searches the same configured district-scoped endpoint and prioritizes the requested ID beyond the 20,000 retained-row cap.
+- [x] React Query keys include effective scope and allowed district selection; HTS results are marked `persist: false` and are not written to IndexedDB.
+- [x] Focused HTS tests cover scope boundaries, province fan-out, returned-row revalidation, ID precedence/privacy allowlist, result classification, strict date parsing, FY-window metrics/risk filtering, and routes/legacy redirects.
+- [ ] Backend follow-ups: enforce caller-derived scope on `/household/hts-register-by-district/:district`; add a scoped HTS by-ID endpoint (the current profile fallback downloads each allowed district); add server-side FY/custom filtering and pagination. The client-side 20,000 retained-row cap does not limit unpaginated backend transfer size.
+- [x] Full project `pnpm check` passed (typecheck, lint, format, 253 tests, brand/contract/fixture checks, and production build). Live API response-parity review remains to be done.
