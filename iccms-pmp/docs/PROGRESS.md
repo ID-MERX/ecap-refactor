@@ -5,10 +5,11 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** The first selected slice extends `households` with the
-archived/risk registers and scoped profile. The implementation and automated checks are complete;
-remaining checklist items are manual/live parity, MSW/Playwright availability, and the shared search-provider
-gap. Next in the plan after those household follow-ups is `vcas`.
+**Phase 5 — Remaining modules: in progress.** The `households` extension is implemented; its live/manual
+parity, MSW/Playwright and search-provider follow-ups remain open. The next approved slice, `vcas`, is
+implemented on this branch with scoped active/archive registers, a FY-windowed service-domain risk
+register, and a scoped profile. VCA live/manual parity, MSW/Playwright, audit checkbox review and the
+shared search-provider gap remain open.
 
 ## Phase 1 checkpoints
 
@@ -135,6 +136,9 @@ Answers to `MIGRATION_PLAN.md` §10, plus decisions taken later.
 | 36 | Table state | Filters, sort and page live in the URL (`nuqs`). `district` and `search` are no longer read-only-on-mount | 2026-11-04 |
 | 37 | Household profile PII | Mask caregiver/member names and phone numbers in the household profile; do not include those fields in new flag payloads | 2026-11-03 |
 | 38 | Household profile flags | Any signed-in user may create/resolve flags **only after** the household has been matched in their scoped active/archive register. Flag list is filtered by household ID. No client-side notification fan-out; defer to a backend flow | 2026-11-03 |
+| 39 | VCA profile privacy and flags | Reuse the household profile policy: mask VCA/caregiver/member names and phone numbers; allow signed-in users to create/resolve only after scoped VCA discovery; omit PII from payloads and do not fan out notifications client-side | 2026-11-03 |
+| 40 | VCA province and district access | Query only exact configured districts within a user's effective scope (one request per district); never use the empty district path for district/province users | 2026-11-03 |
+| 41 | VCA risk service window | Match service events to the selected FY/custom window. Exclude events with missing or unrecognized dates and disclose this; All time mode includes all available history | 2026-11-03 |
 
 ## Access-rule resolutions
 
@@ -198,7 +202,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Household extension routes added: `/households/archived`, `/households/risk`, `/households/:householdId`; scoped profile discovery; PII masking; flags filtered by household and create/resolve controls. **Still open:** Playwright/live side-by-side verification, search provider, full audit checkbox pass, and backend enforcement/notifications. Next module by plan: `vcas` after household follow-ups close |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Household extension landed and VCAS slice now added: scoped active/archive/risk registers and profile; district/province reads use explicit district requests; VCA service risk uses the selected FY window; profile PII is masked and flag actions require scoped profile discovery. **Still open:** live parity, MSW/Playwright, search provider, full audit checkbox pass, and backend enforcement/notifications. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -214,6 +218,20 @@ This phase proves the toolchain with the smallest possible dependency set.
 - [ ] Household search provider (platform search palette/provider is still a Phase 4 gap).
 - [ ] Tick the relevant audit-file boxes after the live parity review; notifications require backend Flow.
 - [x] `pnpm check` green on the current tree (212 tests; typecheck, lint, format, brand/contract/fixtures checks, and production build included).
+
+## Module checklist — VCAS (Phase 5)
+
+- [x] `docs/audit/vcas.md`, module plan row and VCA endpoint catalogue reviewed; routes and legacy redirects mapped.
+- [x] Scoped active/archive API, schemas, normalization, query keys, filters and exports implemented; requests are made per configured allowed district and never use the empty/national endpoint for district or provincial users.
+- [x] VCA risk join and domain status/export implemented; service rows are filtered to the selected FY window. Missing/unrecognized service dates are excluded and disclosed; all-time mode is explicitly labeled.
+- [x] Profile loads only after matching the VCA in scoped active/archive data, then lazily reads case-plan domains; caregiver/member names and phone numbers are masked and omitted from flag payloads.
+- [x] Feature/nav/routes, legacy risk-query redirect, profile query redirect and unit/rendered-route tests implemented. Route pages remain below ~250 lines.
+- [ ] MSW handlers from `test/fixtures` (tests use fetch stubs; MSW is not installed in this checkout).
+- [ ] Playwright smoke test and live side-by-side comparison (browser/backend session unavailable).
+- [ ] Search provider remains blocked on the shared Phase 4 search-provider gap.
+- [ ] Review/tick `docs/audit/vcas.md` parity items after manual comparison; flag permission enforcement and notification fan-out require backend work.
+- [ ] Decide the VCA derived PBFW labels: current profile shows directly configured sub-populations and deliberately does not infer PBFW from AGYW.
+- [x] `pnpm check` green on the current tree (231 tests; typecheck, lint, format, brand/contract/fixture checks, and production build included).
 
 ## Open questions for the developer (carried from the audit)
 
@@ -290,6 +308,7 @@ Gaps found that need backend work (`MIGRATION_PLAN.md` §8). Status as of this s
 | 11 | **New:** a per-district aggregate endpoint so `/districts` need not download every register plus N count calls | **Open** | `docs/audit/districts.md` |
 | 12 | **New:** signed short-lived URLs for downloads, SSE and assets instead of `?token=` / `?access_token=` | **Open** — the token leaks into logs and history today | `AUDIT.md` §3.1.2, §4.2 |
 | 13 | **New:** server-side scope enforcement on Directus flag list/create/resolve and notification fan-out via a backend Flow | **Open.** The UI verifies the household is in the user's scoped register and filters flags by household ID, but Directus permissions must enforce ownership too | `docs/audit/households.md`, profile flag form and Backend asks |
+| 14 | **New:** repair the broken VCA profile-by-ID endpoint and enforce scope/ownership on VCA service, case-plan, domain, referral and flag reads/writes | **Open.** The profile verifies membership in scoped active/archive registers before issuing by-ID reads, but the current backend endpoints lack server-side ownership checks and the profile endpoint reads the wrong route parameter | `docs/audit/vcas.md` profile endpoints and questions 1–3 |
 
 ## Scripts added this session
 

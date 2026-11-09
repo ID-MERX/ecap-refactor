@@ -10,6 +10,7 @@ import {
   geography,
   getCurrentFy,
   provinces,
+  programConfig,
   subPopulationDataKey,
   subPopulations,
   subPopulationsFor,
@@ -94,6 +95,19 @@ describe("fiscal year", () => {
 
   it("returns an inclusive 1 Oct – 30 Sep range", () => {
     expect(fiscalYearRange(2027)).toEqual({ start: "2026-10-01", end: "2027-09-30" });
+  });
+});
+
+describe("shared risk configuration", () => {
+  it("uses the same service-domain definitions for household and VCA risk registers", () => {
+    expect(programConfig.vcaRiskTypes).toEqual(programConfig.householdRiskTypes);
+    expect(programConfig.vcaRiskTypes.map(({ value }) => value)).toEqual([
+      "health_domain",
+      "schooled_domain",
+      "safe_domain",
+      "stable_domain",
+      "graduation_path",
+    ]);
   });
 });
 
