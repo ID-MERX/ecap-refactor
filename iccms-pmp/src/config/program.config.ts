@@ -267,6 +267,9 @@ export const programConfig = {
     children: "VCAs",
     household: "Household",
     caseworker: "Caseworker",
+    motherIndex: "Mother Index",
+    implementingPartner: "Implementing Partner",
+    primaryChild: "Primary VCA",
   },
 
   dateFormats: {

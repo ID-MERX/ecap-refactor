@@ -5,7 +5,7 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services and HTS are merged; PMTCT is implemented and full-project validation passes. Live API parity review remains.
+**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS and PMTCT are merged; Mother Index is implemented and full-project validation passes. Live API parity review remains.
 Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
 Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
 and wait for approval; keep one module per session.
@@ -205,7 +205,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services and HTS are merged. PMTCT is implemented on this branch with scoped mother/HEI lists, backend date-bound requests, and a linked profile. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS and PMTCT are merged. Mother Index is implemented on this branch with scoped mother lists, household-member validation, separate HIV/ART filters, and backend date-bound requests. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -376,3 +376,15 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [x] Focused tests cover ID precedence, date/outcome parsing, backend date bounds, district scope/revalidation, profile/HEI joining, metrics, and manifest routes.
 - [ ] Backend follow-ups: enforce authenticated caller scope, implement FY/custom filtering (current handlers ignore `from`/`to`), add pagination, and provide a scoped by-ID endpoint. The current client retention cap does not limit response transfer.
 - [x] Full project `pnpm check` passed (typecheck, lint, formatting, 259 tests, brand/contract/fixture checks, and production build). Live API response-parity review remains.
+
+## Module checklist — Mother Index (Phase 5)
+
+- [x] `/mother-index` and `/mother-index/:id` registered behind `records.view` and district-or-higher module scope; legacy register/profile routes redirect.
+- [x] Mother API fans out only to configured permitted districts, sends FY/custom `from`/`to`, revalidates returned districts, normalizes explicit fields, and applies a 20,000 retained-row-per-district cap.
+- [x] Canonical ID follows the approved `mother_id` → `household_id` → `ecap_id` precedence; scoped by-register profile discovery precedes the household-members call.
+- [x] Children are joined only by exact household ID, and their district is revalidated against the mother. No name/phone or fuzzy-ID match is used.
+- [x] HIV and ART are distinct, tri-state filters and export fields; unknown statuses are not misclassified. Count derives consistently from the normalized filtered list; unsupported Active badges/dead date filter are dropped.
+- [x] Register, search, pagination, CSV export, masked profile, household navigation, query-preserving redirects and focused tests implemented.
+- [x] Sensitive mother/profile queries are marked `persist: false`; raw rows and personal name/phone values are not retained in normalized records.
+- [ ] Backend follow-ups: authenticated scope enforcement, FY/custom filtering (current endpoint ignores `from`/`to`), pagination, and a scoped mother by-ID endpoint. Household-members lookup currently has no ownership check; frontend requires a previously scoped mother and revalidates household and district.
+- [x] Full project `pnpm check` passed (typecheck, lint, formatting, 265 tests, brand/contract/fixture checks, and production build). Live API response-parity review remains.

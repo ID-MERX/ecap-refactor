@@ -303,3 +303,14 @@ Note the register uses `mother_id` first as the record ID, while the detail page
 8. **CAs linking**: replace the fuzzy household, name and phone matching with exact `household_id` equality, or with `GET /household/members/:household_id`? Keep name/phone matching at all?
 9. **Scope**: should province users be restricted to their province (no national "All Districts")? This needs backend enforcement (backend ask).
 10. **Persistence**: should mother rows (health PII) be excluded from the IndexedDB query persistence (`persist: false`)?
+
+## Phase 5 implementation decisions and status (2026-11-03)
+
+- Canonical route ID follows the approved precedence: `mother_id`, then `household_id`, then `ecap_id`. The legacy query-string redirect maps `/profile/mother-index-details?id=…` to `/mother-index/:id` while preserving other query parameters.
+- The profile first resolves the mother from the district-scoped register query. Only after that succeeds does it call `/household/members/:householdId`; returned children must match the exact normalized household ID and the mother's district. No name/phone or fuzzy-ID matching is used.
+- HIV and ART are separate fields and filters. HIV uses `caregiver_hiv_status`, `hiv_status`, then `user_select_hiv`; ART uses `art_status`, `on_art`, then `art_linkage`. Unknown values remain unknown, not negative. CSV headers distinguish HIV Status and ART Status.
+- The platform FY/custom bounds are sent as `from`/`to`; the frontend does not filter locally. The current mother handler ignores these bounds until backend support is delivered. The dead legacy 30/90-day filter and unsupported Active badges were dropped.
+- Counts are derived from the same deduplicated/search/category-filtered list. Mother and household queries are transient (`persist: false`). Personal names and phone fields are neither normalized nor used for household matching; the profile retains the legacy confidential heading.
+- District scope is fixed for district users; province/national scope fans out over configured districts and all list/member rows are revalidated. The unpaginated register retains at most 20,000 rows per district; this does not limit response transfer.
+
+Backend follow-ups: enforce caller-derived scope on mother register and household-member endpoints, implement FY/custom filtering, paginate the mother and household-member lists, and add a scoped mother by-ID endpoint.
