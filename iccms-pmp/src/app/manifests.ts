@@ -9,6 +9,7 @@ import { caregiversManifest } from "@/modules/caregivers";
 import { householdsManifest } from "@/modules/households";
 import { htsManifest } from "@/modules/hts";
 import { pmtctManifest } from "@/modules/pmtct";
+import { referralsManifest } from "@/modules/referrals";
 import { motherIndexManifest } from "@/modules/mother-index";
 import { servicesManifest } from "@/modules/services";
 import { vcasManifest } from "@/modules/vcas";
@@ -23,4 +24,5 @@ export const manifests: ReadonlyArray<ModuleManifest> = [
   htsManifest,
   pmtctManifest,
   motherIndexManifest,
+  referralsManifest,
 ];
