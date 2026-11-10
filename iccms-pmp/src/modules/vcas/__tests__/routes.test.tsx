@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "@/app/App";
@@ -212,47 +211,11 @@ describe("VCA module routes", () => {
     ).toBe(true);
   });
 
-  it("creates a scoped flag without sending masked PII", async () => {
+  it("keeps flag history and creation unavailable while the Flags module is disabled", async () => {
     const requests = setup("/vcas/VCA-1");
-    const user = userEvent.setup();
     render(<App />);
     await screen.findByRole("heading", { name: "VCA profile" });
-    await user.click(screen.getByRole("button", { name: "Flags" }));
-    await waitFor(() =>
-      expect(
-        requests.some(
-          ({ url }) => url.searchParams.get("filter[_or][0][vca_id][_eq]") === "SERVICE-1",
-        ),
-      ).toBe(true),
-    );
-    await user.type(screen.getByLabelText("Flag observations"), "Please verify the service entry.");
-    await user.click(screen.getByRole("button", { name: "Submit flag record" }));
-    await waitFor(() =>
-      expect(
-        requests.some(
-          ({ url, init }) =>
-            url.pathname.endsWith("/items/flagged_forms_ecapplus_pmp") && init?.method === "POST",
-        ),
-      ).toBe(true),
-    );
-    const sent = requests.find(
-      ({ url, init }) =>
-        url.pathname.endsWith("/items/flagged_forms_ecapplus_pmp") && init?.method === "POST",
-    );
-    const payload = JSON.parse(String(sent?.init?.body)) as Record<string, unknown>;
-    expect(payload).toMatchObject({
-      vca_id: "SERVICE-1",
-      household_id: "HH-1",
-      status: "pending",
-      comment: "Please verify the service entry.",
-    });
-    for (const field of [
-      "caregiver_name",
-      "caseworker_name",
-      "caseworker_phone",
-      "firstname",
-      "lastname",
-    ])
-      expect(payload).not.toHaveProperty(field);
+    expect(screen.queryByRole("button", { name: "Flags" })).toBeNull();
+    expect(requests.some(({ url }) => url.pathname.includes("/items/flagged_forms"))).toBe(false);
   });
 });

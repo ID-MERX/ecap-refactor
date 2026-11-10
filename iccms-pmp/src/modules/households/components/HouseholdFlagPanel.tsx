@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from "react";
+import { useAuth } from "@/core/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { programConfig } from "@/config";
@@ -22,6 +23,9 @@ function displayDate(value: unknown): string {
 }
 
 export function HouseholdFlagPanel({ householdId, scopeKey, verifier }: Props): ReactNode {
+  const { state } = useAuth();
+  const canResolve =
+    state.status === "authenticated" && state.access.permissions.has("flags.resolve");
   const queryClient = useQueryClient();
   const [category, setCategory] = useState("");
   const [severity, setSeverity] = useState("");
@@ -110,7 +114,7 @@ export function HouseholdFlagPanel({ householdId, scopeKey, verifier }: Props): 
               <time className="mt-2 block text-xs text-slate-500">
                 {displayDate(flag.created_on)}
               </time>
-              {flag.status !== "resolved" ? (
+              {canResolve && flag.status !== "resolved" ? (
                 <button
                   type="button"
                   disabled={resolveMutation.isPending}

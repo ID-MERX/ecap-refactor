@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -160,49 +160,12 @@ describe("household module routes", () => {
     expect(await screen.findByText("Domain detail")).toBeTruthy();
   });
 
-  it("filters Directus flags by the matched household id", async () => {
+  it("keeps flag history and creation unavailable while the Flags module is disabled", async () => {
     const requests = setup("/households/HH-P");
     render(<App />);
     await screen.findByRole("heading", { name: "HH-P" });
-    await userEvent.click(screen.getByRole("button", { name: "Flags" }));
-    expect(await screen.findByText("Review the record")).toBeTruthy();
-    await waitFor(() =>
-      expect(
-        requests.some(({ url }) => url.searchParams.get("filter[household_id][_eq]") === "HH-P"),
-      ).toBe(true),
-    );
-  });
-
-  it("lets an assigned-scope user create a flag without putting masked PII in its payload", async () => {
-    const requests = setup("/households/HH-P");
-    render(<App />);
-    await screen.findByRole("heading", { name: "HH-P" });
-    await userEvent.click(screen.getByRole("button", { name: "Flags" }));
-    await userEvent.type(
-      screen.getByLabelText("Flag observations"),
-      "The address needs verification.",
-    );
-    await userEvent.click(screen.getByRole("button", { name: "Submit flag record" }));
-    await waitFor(() =>
-      expect(
-        requests.some(
-          ({ url, init }) =>
-            url.pathname.endsWith("/items/flagged_forms_ecapplus_pmp") && init?.method === "POST",
-        ),
-      ).toBe(true),
-    );
-    const sent = requests.find(
-      ({ url, init }) =>
-        url.pathname.endsWith("/items/flagged_forms_ecapplus_pmp") && init?.method === "POST",
-    );
-    const payload = JSON.parse(String(sent?.init?.body)) as Record<string, unknown>;
-    expect(payload).toMatchObject({
-      household_id: "HH-P",
-      status: "pending",
-      comment: "The address needs verification.",
-    });
-    expect(payload).not.toHaveProperty("caregiver_name");
-    expect(payload).not.toHaveProperty("caseworker_phone");
+    expect(screen.queryByRole("button", { name: "Flags" })).toBeNull();
+    expect(requests.some(({ url }) => url.pathname.includes("/items/flagged_forms"))).toBe(false);
   });
 
   it("does not issue profile detail requests when the URL id is outside the scoped registers", async () => {

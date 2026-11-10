@@ -9,6 +9,8 @@
 export type { Household } from "./api/schemas";
 export { normalizeHousehold } from "./api/schemas";
 export { householdRegisterQuery } from "./api/queries";
+export { householdFlagContextQuery } from "./api/flagContext";
+export type { HouseholdFlagContext } from "./api/flagContext";
 export type { RegisterResult as HouseholdRegisterResult } from "./api/client";
 
 /** Path builders, so no module inlines a URL string. */

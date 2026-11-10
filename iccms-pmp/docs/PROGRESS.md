@@ -5,7 +5,7 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT and Mother Index are merged; Referrals is implemented as a feature-flagged scaffold and full-project validation passes. Live API parity review remains.
+**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index and Referrals are merged. Flags is implemented as a default-off scaffold; full-project validation passes. Live API parity review remains.
 Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
 Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
 and wait for approval; keep one module per session.
@@ -398,3 +398,13 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [x] Aggregate queries use `persist: false`; tests cover scope, response parsing, date-bound requests, aggregation and default-off route flag.
 - [ ] Backend follow-up: implement a scoped, FY-aware, paginated referral list with stable caregiver/child classification, and enforce caller scope on existing monthly endpoint district parameters.
 - [x] Full project `pnpm check` passed (typecheck, lint, formatting, 271 tests, brand/contract/fixture checks, and production build). Live backend parity remains.
+
+## Module checklist — Flags (Phase 5 default-off scaffold)
+
+- [x] Registered `/flags` and `/flags/new` with `records.view`, district-or-higher scope, and the existing `flags.resolve` action permission; `module.flags` is disabled by default.
+- [x] `/flags` makes no request to the unscoped legacy collection and clearly discloses the missing server authorization/scope boundary.
+- [x] The new-flag route accepts exactly one household/VCA ID and loads only minimal context from scoped register queries, revalidating district membership; context queries are non-persistent.
+- [x] Existing household/VCA profile flag tabs and mutations are hidden while the feature is off; resolve buttons require `flags.resolve`.
+- [x] Tests cover default-off/route declaration, ID validation, scoped context lookups, minimal context shape, no-scope guards, and absence of legacy flag requests from profile routes.
+- [ ] Backend follow-up: scoped/paginated list, trusted relationship-based scope, caller-authorized create/resolve mutations, and documented notification semantics.
+- [x] Full project `pnpm check` passed (typecheck, lint, formatting, 282 tests, brand/contract/fixture checks, and production build). Live backend parity remains.

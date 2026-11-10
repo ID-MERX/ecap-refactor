@@ -181,6 +181,16 @@ describe("district detection", () => {
 });
 
 describe("permissions", () => {
+  it("grants flag resolution only at national or provincial scope", () => {
+    expect(derivePermissions({ level: "national" })).toContain("flags.resolve");
+    expect(
+      derivePermissions({ level: "province", province: "Central Province", districts: [] }),
+    ).toContain("flags.resolve");
+    expect(derivePermissions({ level: "district", district: "Kabwe" })).not.toContain(
+      "flags.resolve",
+    );
+  });
+
   it("gives a national user the admin surfaces legacy left unguarded", () => {
     const permissions = derivePermissions({ level: "national" });
     expect(permissions).toContain("users.manage");

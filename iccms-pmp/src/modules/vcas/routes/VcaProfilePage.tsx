@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 
+import { isEnabled } from "@/config";
 import { useAuth } from "@/core/auth";
 import { displayName } from "@/core/auth/me";
 import { ErrorState } from "@/platform/data-table/states";
@@ -22,8 +23,8 @@ import { VcaRecordList, vcaValue } from "../components/VcaRecordList";
 import { sortVcaRowsByDate } from "../model/table";
 
 const PROFILE_WINDOW = { from: null, to: null, label: "All time", slug: "all_time" } as const;
-const TABS = ["Summary", "Case plans", "Services", "Referrals", "Flags"] as const;
-type Tab = (typeof TABS)[number];
+const TABS = ["Summary", "Case plans", "Services", "Referrals"] as const;
+type Tab = (typeof TABS)[number] | "Flags";
 function identifiers(vca: Vca): VcaIdentifiers {
   const routeId = vca.vcaId;
   return {
@@ -46,6 +47,8 @@ export function VcaProfilePage(): ReactNode {
   const { state } = useAuth();
   const scope = state.status === "authenticated" ? state.access.scope : { level: "none" as const };
   const scopeKey = vcaScopeKey(scope);
+  const flagsEnabled = isEnabled("module.flags");
+  const tabs = flagsEnabled ? [...TABS, "Flags" as const] : TABS;
   const [tab, setTab] = useState<Tab>("Summary");
   const activeQuery = useQuery(vcaActiveQuery(scope, PROFILE_WINDOW));
   const archivedQuery = useQuery(vcaArchivedQuery(scope, PROFILE_WINDOW, "all"));
@@ -163,7 +166,7 @@ export function VcaProfilePage(): ReactNode {
         </div>
       </header>
       <nav aria-label="VCA profile sections" className="flex flex-wrap gap-2 border-b">
-        {TABS.map((item) => (
+        {tabs.map((item) => (
           <button
             key={item}
             type="button"
@@ -212,7 +215,7 @@ export function VcaProfilePage(): ReactNode {
           empty="No referral records found."
         />
       ) : null}
-      {tab === "Flags" ? (
+      {flagsEnabled && tab === "Flags" ? (
         <VcaFlagPanel
           scope={scopeKey}
           vcaId={recordIds?.flagId ?? ""}
