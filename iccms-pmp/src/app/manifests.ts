@@ -19,6 +19,7 @@ import { referralsManifest } from "@/modules/referrals";
 import { motherIndexManifest } from "@/modules/mother-index";
 import { servicesManifest } from "@/modules/services";
 import { vcasManifest } from "@/modules/vcas";
+import { usersManifest } from "@/modules/users";
 
 import type { ModuleManifest } from "@/core/modules";
 
@@ -37,4 +38,5 @@ export const manifests: ReadonlyArray<ModuleManifest> = [
   districtsManifest,
   dashboardManifest,
   calendarManifest,
+  usersManifest,
 ];

@@ -52,7 +52,8 @@ const MODULES: ReadonlyArray<ModuleManifest> = [
   }),
   manifest({
     id: "users",
-    feature: "module.users",
+    // Use an enabled feature in this synthetic registry fixture; the real Users module is default-off.
+    feature: "module.account",
     navGroup: "Admin",
     nav: [{ label: "Users", to: "/users", requires: ["users.manage"] }],
     routes: [{ path: "/users", component: Noop, requires: ["users.manage"] }],

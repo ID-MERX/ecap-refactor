@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { allFeatureKeys, resolveFlags, type FeatureKey } from "./features";
 
 describe("features", () => {
-  it("ships referrals, flags, performance, caseworkers, districts, dashboard, and the training log off by default", () => {
+  it("ships referrals, flags, performance, caseworkers, districts, dashboard, calendar, users, and the training log off by default", () => {
     // These modules either lack usable APIs or rely on endpoints that do not enforce caller scope.
     expect(resolveFlags([])["module.referrals"]).toBe(false);
     expect(resolveFlags([])["module.flags"]).toBe(false);
@@ -12,6 +12,7 @@ describe("features", () => {
     expect(resolveFlags([])["module.districts"]).toBe(false);
     expect(resolveFlags([])["module.dashboard"]).toBe(false);
     expect(resolveFlags([])["module.calendar"]).toBe(false);
+    expect(resolveFlags([])["module.users"]).toBe(false);
     expect(resolveFlags([])["module.trainingLog"]).toBe(false);
   });
 
