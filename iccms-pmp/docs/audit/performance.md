@@ -236,3 +236,14 @@ Tables:
 6. Should caseworker rows link to the caseworker profile? There is no stable caseworker ID, only a name.
 7. Should the tab, district, ward and per-tab filters sync to the URL? Legacy keeps none of them.
 8. Should the service tier filter gain a "No activity" option, and should the `top` label be unified ("High performer" vs "Well-performing")?
+
+## Phase 5 implementation decision and status (2026-11-03)
+
+The user approved a **default-off scaffold**. `module.performance` is false by default until the three performance endpoints enforce the signed-in caller's jurisdiction. Their district parameter is currently trusted, so client-selected scope alone is not an authorization boundary.
+
+- `/performance` is registered with `records.view` at district-or-higher scope, but the feature flag removes the route and nav by default. If opened after an intentional code change, it shows an unavailable state and makes no analytics request.
+- There is no by-ID route, no clickable row, and no national household-register download to discover districts. The unscoped `/etl/facility-list` ward endpoint is also excluded from the scaffold.
+- The existing endpoints compare the current calendar month with the previous calendar month and ignore FY/custom date bounds. The page explicitly discloses that semantics rather than implying the global FY filter works.
+- No performance rows, caseworker names, or facility data are loaded, cached, or exported by this scaffold.
+
+Backend follow-up before enabling: enforce scope from the authenticated user on facility-, caseworker- and service-performance handlers; make facility aggregation non-duplicating across ward/district groups; provide district-scoped ward options if needed; document that `from`/`to` are ignored or implement cohort/FY filtering. Once scope enforcement is verified, the live page can fan out only across configured permitted districts, revalidate returned rows, key by scope, and keep query results non-persistent.

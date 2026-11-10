@@ -10,6 +10,7 @@ import { flagsManifest } from "@/modules/flags";
 import { householdsManifest } from "@/modules/households";
 import { htsManifest } from "@/modules/hts";
 import { pmtctManifest } from "@/modules/pmtct";
+import { performanceManifest } from "@/modules/performance";
 import { referralsManifest } from "@/modules/referrals";
 import { motherIndexManifest } from "@/modules/mother-index";
 import { servicesManifest } from "@/modules/services";
@@ -27,4 +28,5 @@ export const manifests: ReadonlyArray<ModuleManifest> = [
   motherIndexManifest,
   referralsManifest,
   flagsManifest,
+  performanceManifest,
 ];

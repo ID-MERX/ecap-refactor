@@ -5,7 +5,7 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index and Referrals are merged. Flags is implemented as a default-off scaffold; full-project validation passes. Live API parity review remains.
+**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals and Flags are merged. Performance is implemented as a default-off scaffold; full-project validation passes. Live API parity review remains.
 Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
 Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
 and wait for approval; keep one module per session.
@@ -205,7 +205,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT and Mother Index are merged. Referrals is implemented on this branch as a default-off scaffold using only scoped monthly aggregates. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals and Flags are merged. Performance is implemented on this branch as a default-off scaffold that makes no analytics request. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -408,3 +408,13 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [x] Tests cover default-off/route declaration, ID validation, scoped context lookups, minimal context shape, no-scope guards, and absence of legacy flag requests from profile routes.
 - [ ] Backend follow-up: scoped/paginated list, trusted relationship-based scope, caller-authorized create/resolve mutations, and documented notification semantics.
 - [x] Full project `pnpm check` passed (typecheck, lint, formatting, 282 tests, brand/contract/fixture checks, and production build). Live backend parity remains.
+
+## Module checklist — Performance (Phase 5 default-off scaffold)
+
+- [x] Registered `/performance` under `records.view` and district-or-higher scope; `module.performance` is disabled by default pending authenticated backend scope enforcement.
+- [x] The route displays an unavailable state and makes no request to the unsafe performance endpoints.
+- [x] No national household download or unscoped ward-list request, no by-ID routes, and no caseworker/facility data in cache or export.
+- [x] The page discloses current-versus-previous calendar-month semantics and that current handlers ignore FY/custom date bounds; facility aggregation duplication is documented.
+- [x] Tests cover default-off registration, permission requirement, minimum scope and unreachable route.
+- [ ] Backend follow-up: enforce caller-derived scope on all performance endpoints, correct duplicate facility aggregation, provide scoped ward list if required, and support or document FY bounds.
+- [x] Full project `pnpm check` passed (typecheck, lint, formatting, 283 tests, brand/contract/fixture checks, and production build). Live backend parity remains.
