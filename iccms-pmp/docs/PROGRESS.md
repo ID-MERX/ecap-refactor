@@ -5,7 +5,7 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS and PMTCT are merged; Mother Index is implemented and full-project validation passes. Live API parity review remains.
+**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT and Mother Index are merged; Referrals is implemented as a feature-flagged scaffold and full-project validation passes. Live API parity review remains.
 Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
 Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
 and wait for approval; keep one module per session.
@@ -205,7 +205,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS and PMTCT are merged. Mother Index is implemented on this branch with scoped mother lists, household-member validation, separate HIV/ART filters, and backend date-bound requests. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT and Mother Index are merged. Referrals is implemented on this branch as a default-off scaffold using only scoped monthly aggregates. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -388,3 +388,13 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [x] Sensitive mother/profile queries are marked `persist: false`; raw rows and personal name/phone values are not retained in normalized records.
 - [ ] Backend follow-ups: authenticated scope enforcement, FY/custom filtering (current endpoint ignores `from`/`to`), pagination, and a scoped mother by-ID endpoint. Household-members lookup currently has no ownership check; frontend requires a previously scoped mother and revalidates household and district.
 - [x] Full project `pnpm check` passed (typecheck, lint, formatting, 265 tests, brand/contract/fixture checks, and production build). Live API response-parity review remains.
+
+## Module checklist — Referrals (Phase 5 scaffold)
+
+- [x] `/referrals` manifest route/nav uses `records.view` and district-or-higher scope; the pre-existing `module.referrals` flag remains disabled by default.
+- [x] Existing caregiver/VCA monthly aggregate endpoints are queried one configured district at a time; rows are revalidated, scope is in query keys, and FY/custom bounds are sent for future backend support.
+- [x] All-time caregiver and VCA series stay separate because endpoint joins may overlap; the page explains that current endpoints ignore date bounds.
+- [x] No unreliable legacy service-row fallback, referral table, search, CSV, row links, or by-ID call is included. The register state clearly explains the missing backend list API.
+- [x] Aggregate queries use `persist: false`; tests cover scope, response parsing, date-bound requests, aggregation and default-off route flag.
+- [ ] Backend follow-up: implement a scoped, FY-aware, paginated referral list with stable caregiver/child classification, and enforce caller scope on existing monthly endpoint district parameters.
+- [x] Full project `pnpm check` passed (typecheck, lint, formatting, 271 tests, brand/contract/fixture checks, and production build). Live backend parity remains.

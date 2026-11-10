@@ -136,3 +136,13 @@ Fallback service rows (`caregiver_services`, `vca_services`) have none of `servi
 4. Should rows link to household/VCA detail pages, and should the tab and search be URL-synced?
 5. Should child names appear in the export? Should referral data be excluded from persistence?
 6. Should KPIs follow the active tab? Legacy KPIs ignore it.
+
+## Phase 5 implementation decision and status (2026-11-03)
+
+The user approved a **feature-flagged scaffold** because the backend has no usable district-level list endpoint. `module.referrals` was already false by default and remains off. No fallback to service rows is used.
+
+- `/referrals` is registered with `records.view` and district-or-higher scope; district users are fixed to their district, broader scopes query only configured districts, and monthly result rows are revalidated.
+- The scaffold uses only the existing caregiver and VCA monthly aggregate endpoints, in separate series. These categories may overlap, so no combined grand total is shown. FY/custom `from`/`to` is sent for future support, but the endpoints currently ignore it; charts are all-time.
+- There is deliberately no referral table, search, export, record link, or by-ID query until a backend list endpoint exists. Referral queries are non-persistent and contain aggregate counts only.
+
+Backend follow-up: provide a district/province-scoped and caller-authorized referral list endpoint with stable beneficiary-type classification, FY/custom filtering, pagination, and a documented row shape. The existing monthly endpoints trust caller-supplied district values; client fan-out/revalidation is only defense in depth.
