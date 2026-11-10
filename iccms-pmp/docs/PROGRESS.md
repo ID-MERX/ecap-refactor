@@ -5,7 +5,7 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags and Performance are merged. Caseworkers is implemented as a default-off scaffold; Districts is now implemented as a default-off scaffold. Full-project validation passes. Live API parity review remains.
+**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags, Performance and Caseworkers are merged. Districts is merged as a default-off scaffold. Dashboard is implemented as a default-off scaffold; full-project validation is pending. Live API parity review remains.
 Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
 Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
 and wait for approval; keep one module per session.
@@ -205,7 +205,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags and Performance are merged. Caseworkers is merged as a default-off scaffold; Districts is implemented on this branch as a default-off scaffold with no register download. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags, Performance and Caseworkers are merged. Districts is merged as a default-off scaffold; Dashboard is implemented on this branch as a default-off scaffold with navigation-derived links and no widget requests. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -436,3 +436,12 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [x] Tests cover default-off route registration, scope, and absence of network requests/exports.
 - [ ] Backend follow-up: authorized per-district aggregates, consistent household/VCA active/archived definitions and FY behavior; scoped member-export endpoint if detailed reports remain required.
 - [x] Full project `pnpm check` passed (typecheck, lint, formatting, 288 tests, brand/contract/fixture checks, and production build). Live backend parity remains.
+
+## Module checklist — Dashboard (Phase 5 default-off scaffold)
+
+- [x] Registered `/dashboard` with `records.view` at district-or-higher scope; `module.dashboard` is disabled by default and the `/` shell landing page remains unchanged.
+- [x] Provides a metrics-unavailable state and quick links from the navigation groups already filtered for the user's access; makes no widget API requests.
+- [x] Unsafe KPI/national downloads, flags, action queue, duplicate-review mutations, unmounted insights/trends and calendar data are excluded; no by-ID routes.
+- [x] Tests cover default-off route registration, nav-derived links, and network-free rendering.
+- [ ] Backend follow-up: enforce scope on widget endpoints, define count semantics/pagination, authorize duplicate-review writes, and add scoped widget data contracts.
+- [ ] Full-project `pnpm check` remains to be run.

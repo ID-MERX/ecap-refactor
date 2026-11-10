@@ -919,3 +919,14 @@ nothing is provincial.
    `village`/`zone`)? Should it be FY-scoped? Is a server-side aggregate acceptable instead of loading the whole register?
 10. **Scope for national users:** these widgets send `user.location` verbatim (`"All"` → national). Confirm the port
     uses `platform/scope` (province/district selector + FY) for all of them.
+
+## Phase 5 implementation decision and status (2026-11-03)
+
+The user approved a **default-off scaffold**. `module.dashboard` is false by default. Legacy dashboard data widgets call endpoints with untrusted caller scope, fetch national lists, expose flag/GPS-style records, or mutate duplicate-review state without verified authorization.
+
+- `/dashboard` is registered with `records.view` at district-or-higher scope, but the feature flag removes its route and nav by default. The existing `/` shell landing page remains unchanged.
+- If intentionally opened for the scaffold, it shows an unavailable-metrics notice and quick links derived from the navigation groups already filtered by the app registry for the signed-in user's feature flags, scope and permissions. It makes no widget API calls.
+- No KPI/count queries, national register or ward downloads, flags/recent activity, action queue, duplicate-review widgets/mutations, unmounted service insight/chart widgets, or calendar data are loaded from the dashboard scaffold. No by-ID routes are added.
+- Other dashboard widgets should be contributed by their owning modules only after their data endpoints and mutation permissions are safe. The `Outlet` passes the filtered navigation groups into page context for the dashboard quick links.
+
+Backend follow-up before enabling data widgets: enforce caller-derived scope on count/action-queue/duplicate endpoints; define consistent count semantics and pagination; authorize duplicate-review mutations; use scoped data contracts for household and caseworker widgets. Calendar and flags should remain owned by their feature modules.

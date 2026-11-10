@@ -176,7 +176,7 @@ export const features = {
   "module.performance": false,   // endpoints trust caller-supplied district; keep off until scoped auth is enforced
   "module.caseworkers": false,  // GPS/profile endpoints lack caller-scoped authorization
   "module.districts": false,     // count endpoints trust district; definitions need backend alignment
-  "module.dashboard": true,
+  "module.dashboard": false,  // legacy widgets lack safe scoped data/mutation contracts
   "module.calendar": true,
   "module.users": true,
   "module.account": true,
