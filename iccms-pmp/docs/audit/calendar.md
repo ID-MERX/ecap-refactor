@@ -168,3 +168,11 @@ Event model (`legacy:src/lib/directus.ts:711-720`; collection schema `legacy:scr
 4. Should reminders keep using OS `Notification` (permission requested on a user gesture, e.g. from the bell or settings) in addition to the in-app toast and bell entry?
 5. Backend ask: create permission should preset/validate `user_id = $CURRENT_USER`; confirm Directus 11 policy configuration for `calendar_events`.
 6. Should multi-day events render across every day they span?
+
+## Phase 5 implementation decision and status (2026-11-03)
+
+The user approved a **default-off scaffold only** until the Directus collection's ownership permissions are verified and corrected. The audit found the collection's create permission open and the setup script's per-role permission configuration questionable; clients must not be treated as the ownership boundary.
+
+- `module.calendar` is false by default. `/calendar` is registered with `records.view` at district-or-higher scope, but the feature flag removes its route and nav by default.
+- If the scaffold is explicitly enabled, it displays an unavailable state and makes no event reads/writes, reminder polling, browser notifications, or dashboard-widget requests. No event/by-ID routes or CRUD controls are added.
+- Do not enable calendar data until backend/Directus owners verify caller-derived read/update/delete scope, force ownership to `$CURRENT_USER` on create/update, confirm policy behavior, and address bounded/date-window reads. Reminder integration must be designed separately after safe data access exists.
