@@ -11,6 +11,7 @@ describe("features", () => {
     expect(resolveFlags([])["module.caseworkers"]).toBe(false);
     expect(resolveFlags([])["module.districts"]).toBe(false);
     expect(resolveFlags([])["module.dashboard"]).toBe(false);
+    expect(resolveFlags([])["module.calendar"]).toBe(false);
     expect(resolveFlags([])["module.trainingLog"]).toBe(false);
   });
 

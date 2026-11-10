@@ -177,7 +177,7 @@ export const features = {
   "module.caseworkers": false,  // GPS/profile endpoints lack caller-scoped authorization
   "module.districts": false,     // count endpoints trust district; definitions need backend alignment
   "module.dashboard": false,  // legacy widgets lack safe scoped data/mutation contracts
-  "module.calendar": true,
+  "module.calendar": false, // Directus event ownership permissions are unverified
   "module.users": true,
   "module.account": true,
   "module.dataPipeline": true,

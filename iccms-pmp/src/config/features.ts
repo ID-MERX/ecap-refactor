@@ -34,7 +34,7 @@ export const defaultFeatures = {
   "module.caseworkers": false,
   "module.districts": false,
   "module.dashboard": false,
-  "module.calendar": true,
+  "module.calendar": false,
   "module.users": true,
   "module.account": true,
   "module.dataPipeline": true,
