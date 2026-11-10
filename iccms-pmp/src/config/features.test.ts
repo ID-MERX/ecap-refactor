@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import { allFeatureKeys, resolveFlags, type FeatureKey } from "./features";
 
 describe("features", () => {
-  it("ships referrals, flags, performance, and the training log off by default", () => {
-    // Referrals has no usable list API; Flags and Performance lack backend-enforced caller scope;
-    // the training log has no API. Enabling these would expose unsafe or fake pages.
+  it("ships referrals, flags, performance, caseworkers, and the training log off by default", () => {
+    // These modules either lack usable APIs or rely on endpoints that do not enforce caller scope.
     expect(resolveFlags([])["module.referrals"]).toBe(false);
     expect(resolveFlags([])["module.flags"]).toBe(false);
     expect(resolveFlags([])["module.performance"]).toBe(false);
+    expect(resolveFlags([])["module.caseworkers"]).toBe(false);
     expect(resolveFlags([])["module.trainingLog"]).toBe(false);
   });
 

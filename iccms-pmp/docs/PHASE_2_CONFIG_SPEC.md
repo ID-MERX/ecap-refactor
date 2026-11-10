@@ -174,7 +174,7 @@ export const features = {
   "module.referrals": false,   // no working backend endpoint yet — AUDIT.md §6.2
   "module.flags": false,    // unscoped backend list/mutations; keep off until caller scope is enforced
   "module.performance": false,   // endpoints trust caller-supplied district; keep off until scoped auth is enforced
-  "module.caseworkers": true,
+  "module.caseworkers": false,  // GPS/profile endpoints lack caller-scoped authorization
   "module.districts": true,
   "module.dashboard": true,
   "module.calendar": true,

@@ -237,3 +237,14 @@ All four fire on mount, unconditionally (even with no name), via `getListFromApi
 7. Show a "latest 500 events" truncation notice?
 8. Should map popups link household IDs to `/households/:householdId` and journeys link to the caseworker profile?
 9. Should the `to` date be made inclusive client-side (send next day) until the backend compares dates properly?
+
+## Phase 5 implementation decision and status (2026-11-03)
+
+The user approved a **default-off scaffold**. `module.caseworkers` is false by default until the backend enforces caller-derived scope for journey events and caseworker lists and provides a scoped profile source. Precise GPS coordinates plus household IDs must not be downloaded to district/province clients without that boundary.
+
+- `/caseworkers/journeys` and `/caseworkers/:caseworkerId` are registered under `records.view` with district-or-higher scope, but the feature flag removes their routes and nav by default.
+- When intentionally opened for the scaffold, both routes show an unavailable state and make no calls to `/etl/caseworker-list`, `/etl/caseworker-journeys`, national household/service lists, or map tile providers. Leaflet is not loaded.
+- The future `caseworkerId` is the stable OpenSRP username (`caseworker` from the scoped caseworker list), not a display name, location state, or session storage value. No by-ID fetch occurs until a caller-scoped profile endpoint exists.
+- The legacy journeys URL redirects to `/caseworkers/journeys`. The old profile URL has no stable ID, so it also redirects to journeys for a future explicit selection; it does not guess a caseworker by name.
+
+Backend follow-up before enabling: enforce authenticated district/province scope on both journey and caseworker-list endpoints; add a caller-scoped per-caseworker profile/service endpoint keyed by username; ensure date upper bounds are inclusive; support pagination or document latest-500 truncation. GPS result data must remain non-persistent when live queries are eventually implemented.

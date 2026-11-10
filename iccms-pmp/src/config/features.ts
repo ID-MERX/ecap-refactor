@@ -8,6 +8,7 @@
  * - `module.referrals` — no working district-level referral list endpoint (`docs/AUDIT.md` §6.2, backend ask #9).
  * - `module.flags` — backend list/mutation operations do not enforce caller scope; flag rows also lack reliable district/province fields (`docs/audit/flags.md`).
  * - `module.performance` — performance endpoints trust caller-supplied district values and do not enforce user scope (`docs/audit/performance.md`).
+ * - `module.caseworkers` — journeys return precise GPS/household data without caller-scope checks; profile data has no scoped endpoint (`docs/audit/caseworkers.md`).
  * - `module.trainingLog` — no API at all; the legacy page was demo data (`docs/AUDIT.md` §6.9).
  *
  * `support.calls` is off per decision 4 (WebRTC calls, chat and voice notes are dropped).
@@ -28,7 +29,7 @@ export const defaultFeatures = {
   "module.referrals": false,
   "module.flags": false,
   "module.performance": false,
-  "module.caseworkers": true,
+  "module.caseworkers": false,
   "module.districts": true,
   "module.dashboard": true,
   "module.calendar": true,
