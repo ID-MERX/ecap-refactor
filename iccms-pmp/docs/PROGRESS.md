@@ -5,7 +5,7 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals and Flags are merged. Performance is implemented as a default-off scaffold; full-project validation passes. Live API parity review remains.
+**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags and Performance are merged. Caseworkers is implemented as a default-off scaffold; full-project validation passes. Live API parity review remains.
 Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
 Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
 and wait for approval; keep one module per session.
@@ -205,7 +205,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals and Flags are merged. Performance is implemented on this branch as a default-off scaffold that makes no analytics request. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags and Performance are merged. Caseworkers is implemented on this branch as a default-off scaffold that makes no GPS or national profile-data request. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -418,3 +418,12 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [x] Tests cover default-off registration, permission requirement, minimum scope and unreachable route.
 - [ ] Backend follow-up: enforce caller-derived scope on all performance endpoints, correct duplicate facility aggregation, provide scoped ward list if required, and support or document FY bounds.
 - [x] Full project `pnpm check` passed (typecheck, lint, formatting, 283 tests, brand/contract/fixture checks, and production build). Live backend parity remains.
+
+## Module checklist — Caseworkers (Phase 5 default-off scaffold)
+
+- [x] Registered `/caseworkers/journeys` and `/caseworkers/:caseworkerId` with `records.view` and district-or-higher scope; `module.caseworkers` is disabled by default pending server-side scope enforcement.
+- [x] Both scaffold routes make no requests; GPS points, caseworker lists, and national service/household data are not fetched or cached, and no map tiles/Leaflet are loaded.
+- [x] The future profile ID is the OpenSRP username; no name/session-storage by-ID lookup is used. Legacy journeys and orphan profile paths route to the journeys entry point.
+- [x] Tests cover default-off/unreachable routes and absence of network requests from the unavailable page states.
+- [ ] Backend follow-up: enforce authenticated scope on journey/list endpoints, add a scoped username-based profile endpoint, inclusive `to` dates, and pagination/truncation semantics.
+- [x] Full project `pnpm check` passed (typecheck, lint, formatting, 286 tests, brand/contract/fixture checks, and production build). Live backend parity remains.

@@ -6,6 +6,7 @@
  */
 
 import { caregiversManifest } from "@/modules/caregivers";
+import { caseworkersManifest } from "@/modules/caseworkers";
 import { flagsManifest } from "@/modules/flags";
 import { householdsManifest } from "@/modules/households";
 import { htsManifest } from "@/modules/hts";
@@ -29,4 +30,5 @@ export const manifests: ReadonlyArray<ModuleManifest> = [
   referralsManifest,
   flagsManifest,
   performanceManifest,
+  caseworkersManifest,
 ];
