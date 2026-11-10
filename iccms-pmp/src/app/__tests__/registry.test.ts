@@ -79,10 +79,10 @@ describe("visibleModules", () => {
     expect(ids).not.toContain("referrals");
   });
 
-  it("drops /districts for a district user (decision 26)", () => {
-    expect(visibleModules(MODULES, district).map((m) => m.id)).not.toContain("districts");
-    expect(visibleModules(MODULES, province).map((m) => m.id)).toContain("districts");
-    expect(visibleModules(MODULES, national).map((m) => m.id)).toContain("districts");
+  it("keeps the default-off /districts module hidden at every scope", () => {
+    for (const access of [district, province, national]) {
+      expect(visibleModules(MODULES, access).map((m) => m.id)).not.toContain("districts");
+    }
   });
 });
 

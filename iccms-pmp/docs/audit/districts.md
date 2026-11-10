@@ -152,3 +152,14 @@ Columns in order (`legacy:src/pages/Districts.tsx:403-419`):
 - **QUESTION** Should the FY filter be visible on this page (legacy hides it but still applies it)?
 - **QUESTION** Should the detailed export respect the FY window and de-duplicate households? Keep the `Community` column (source keys `community`/`village` appear absent from `all_households`)?
 - **QUESTION** Is the "View" drill-down to the household register enough, or should it also offer VCAs (`/vcas?district=`)?
+
+## Phase 5 implementation decision and status (2026-11-03)
+
+The user approved a **default-off scaffold**. `module.districts` is false by default until the backend provides caller-authorized, scope-enforced district aggregates with consistent household/VCA definitions. Existing count handlers trust caller-supplied district values; the legacy page also downloads the entire national household register.
+
+- `/districts` is registered with `records.view` at province-or-higher scope; district users are excluded because a one-district comparison page is not useful. The feature flag removes the route and nav by default.
+- If opened after an intentional code change, the page shows the security/definition blocker and makes no API requests. It does not fetch a national register, render aggregates, show detailed household exports, or expose by-ID routes.
+- The future live page should use a server-enforced per-district aggregate endpoint, not row-level household/member downloads. Household and VCA totals must remain separate until their active/archived definitions align; the legacy detailed CSV (which contains caregiver/household data) is not part of this scaffold.
+- A future district “View” link may use the households module's public path builder, but there is no row/profile navigation in the scaffold.
+
+Backend follow-up before enabling: authorize aggregates from the authenticated user's scope; return consistent active/archived definitions and documented FY behavior; provide pagination only if returning rows; add a scoped household/member export endpoint if the detailed report is still required. Do not treat client-supplied district values as authorization.
