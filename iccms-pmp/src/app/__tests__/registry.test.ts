@@ -113,7 +113,7 @@ describe("buildRoutes", () => {
 describe("buildNav", () => {
   it("groups items in first-seen order", () => {
     const groups = buildNav(MODULES, national).map((g) => g.group);
-    expect(groups).toEqual([null, "Registers", "Admin"]);
+    expect(groups).toEqual(["Registers", "Admin"]);
   });
 
   it("drops a group whose every item is hidden", () => {

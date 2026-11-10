@@ -146,7 +146,7 @@ export function AppShell({
         </header>
 
         <main className="min-w-0 flex-1 p-4 md:p-6">
-          <Outlet />
+          <Outlet context={groups} />
         </main>
       </div>
     </div>
