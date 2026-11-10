@@ -1,0 +1,1 @@
+export { districtsManifest } from "./manifest";

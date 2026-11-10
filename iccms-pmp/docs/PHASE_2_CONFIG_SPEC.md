@@ -175,7 +175,7 @@ export const features = {
   "module.flags": false,    // unscoped backend list/mutations; keep off until caller scope is enforced
   "module.performance": false,   // endpoints trust caller-supplied district; keep off until scoped auth is enforced
   "module.caseworkers": false,  // GPS/profile endpoints lack caller-scoped authorization
-  "module.districts": true,
+  "module.districts": false,     // count endpoints trust district; definitions need backend alignment
   "module.dashboard": true,
   "module.calendar": true,
   "module.users": true,
