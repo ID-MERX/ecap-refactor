@@ -112,3 +112,12 @@ All endpoints are Directus calls (none are DQA). See (AUDIT.md §3.3).
 - Should `/account` get a voluntary change-password form (`PATCH /users/me`) in addition to, or instead of, the reset-email button?
 - Should avatar replacement delete the previous `directus_files` record, and should we add an upload size/type limit?
 - Should the hardcoded "Active" badge reflect the Directus `status`, or be removed?
+
+## Phase 5 implementation decision and status (2026-11-03)
+
+The user approved a **read-only account page**. `module.account` remains enabled. The page reads the signed-in user's profile already loaded by `AuthProvider` from `/users/me`; it does not make an additional profile request.
+
+- `/account` is available inside the authenticated application shell and `/profile` redirects to it. The page displays only the current session user's name, email and role, with no arbitrary user identifier.
+- No avatar image, upload/removal, password reset, or other mutation is added. The legacy asset helper puts the access token in the URL, and the audit has not verified server-side own-avatar enforcement. Password controls remain deferred until a safe contract/UI is agreed.
+- No `/account/:id`, `/users/:id`, or other by-ID route is added. The page is not a user-directory surface.
+- Follow-up before enabling profile changes: provide own-user-only avatar update permissions; use a safe authenticated asset helper that does not expose tokens in URLs; decide between reset email and the existing backend change-password endpoint; validate uploaded file size/type and orphan cleanup policy.

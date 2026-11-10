@@ -6,6 +6,7 @@
  */
 
 import { caregiversManifest } from "@/modules/caregivers";
+import { accountManifest } from "@/modules/account";
 import { calendarManifest } from "@/modules/calendar";
 import { districtsManifest } from "@/modules/districts";
 import { dashboardManifest } from "@/modules/dashboard";
@@ -39,4 +40,5 @@ export const manifests: ReadonlyArray<ModuleManifest> = [
   dashboardManifest,
   calendarManifest,
   usersManifest,
+  accountManifest,
 ];
