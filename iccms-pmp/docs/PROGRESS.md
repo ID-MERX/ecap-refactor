@@ -5,7 +5,7 @@ Updated at the end of every session. Newest entries at the top of each section.
 ## Current phase
 
 **Phase 1 — Audit, Phase 2 — Scaffold, Phase 3 — Core/shell, and Phase 4 — Platform/pilot: COMPLETE.**
-**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags, Performance, Caseworkers, Districts and Dashboard are merged. Calendar is implemented on this branch as a default-off scaffold; `pnpm check` passes with 293 tests. Live API parity review remains.
+**Phase 5 — Remaining modules: in progress.** Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags, Performance, Caseworkers, Districts, Dashboard and Calendar are merged. Users is implemented on this branch as a default-off scaffold; `pnpm check` passes with 295 tests. Live API parity review remains.
 Remaining work includes live/manual parity, MSW/Playwright coverage, service/caregiver audit review, backend authorization/scope/pagination follow-ups, and the shared search-provider gap.
 Before starting another Phase 5 module, propose its structure/routes/permissions/by-ID requirements
 and wait for approval; keep one module per session.
@@ -205,7 +205,7 @@ This phase proves the toolchain with the smallest possible dependency set.
 | 2 Scaffold | **done** | 2026-11-04 | `pnpm check` green: typecheck, lint (with layer boundaries), prettier, 17 tests, brand check, contract check, fixtures, build |
 | 3 Core and shell | **done** | 2026-11-04 | `core/access` (with backend parity tests), `core/api`, `core/auth`, module registry, shell, guards |
 | 4 Platform + pilot | **done** | 2026-11-04 | `platform/scope` (FY, URL-first precedence), `platform/filters` (one `applyFilters` for table/count/export), `platform/data-table` (server mode, pagination, column picker), `platform/export` (RFC-4180 + CSV-injection guard); pilot `/households` register end to end; `docs/ADDING_A_MODULE.md`; **192 tests** |
-| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags, Performance, Caseworkers, Districts and Dashboard are merged. Calendar is implemented on this branch as a default-off scaffold with no event requests, reminders or mutations. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
+| 5 Remaining modules | **in progress** | 2026-11-03 | Households, VCAS, Caregivers, Services, HTS, PMTCT, Mother Index, Referrals, Flags, Performance, Caseworkers, Districts, Dashboard and Calendar are merged. Users is implemented on this branch as a default-off scaffold with no directory requests, mutations, or by-ID routes. **Still open:** live parity, MSW/Playwright, shared search provider, manual audit review, and backend authorization/scope/pagination follow-ups. |
 
 ## Module checklist — households extension (Phase 5)
 
@@ -454,3 +454,12 @@ All in `iccms-pmp/scripts/`. None is part of the app bundle; all are developer a
 - [x] Tests cover default-off routing, scope, and network-free rendering.
 - [ ] Backend follow-up: verify Directus policies; enforce current-user ownership on create/update and scope all reads/writes; provide bounded/date-window reads before implementing calendar data/reminders.
 - [x] Full-project `pnpm check` passed (293 tests, typecheck, lint, formatting, brand, contract, fixtures and production build).
+
+## Module checklist — Users (Phase 5 default-off scaffold)
+
+- [x] Registered only `/users`, gated by `users.manage` and national scope; `module.users` is disabled by default.
+- [x] Shows the server-authorization blocker without requesting users or roles.
+- [x] No create/edit/by-ID routes, password reset, account mutations, or browser-side delete cascade.
+- [x] Tests cover the default-off route, permission/scope declaration, lack of by-ID routes, and network-free rendering.
+- [ ] Backend follow-up: authorize list and writes, define role/scope assignment authority, prevent self-lockout as appropriate, and provide an auditable server-side archive/delete operation.
+- [x] Full-project `pnpm check` passed (295 tests, typecheck, lint, formatting, brand, contract, fixtures and production build).

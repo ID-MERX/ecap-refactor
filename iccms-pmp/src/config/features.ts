@@ -11,6 +11,8 @@
  * - `module.caseworkers` — journeys return precise GPS/household data without caller-scope checks; profile data has no scoped endpoint (`docs/audit/caseworkers.md`).
  * - `module.districts` — district count endpoints trust caller-supplied values and have inconsistent definitions (`docs/audit/districts.md`).
  * - `module.dashboard` — legacy KPI/widget endpoints include unscoped or unsafe data and mutations (`docs/audit/dashboard.md`).
+ * - `module.calendar` — Directus ownership permissions are unverified and create may allow cross-user ownership (`docs/audit/calendar.md`).
+ * - `module.users` — account endpoints lack verified server authorization and the browser-side deletion cascade is unsafe (`docs/audit/users.md`).
  * - `module.trainingLog` — no API at all; the legacy page was demo data (`docs/AUDIT.md` §6.9).
  *
  * `support.calls` is off per decision 4 (WebRTC calls, chat and voice notes are dropped).
@@ -35,7 +37,7 @@ export const defaultFeatures = {
   "module.districts": false,
   "module.dashboard": false,
   "module.calendar": false,
-  "module.users": true,
+  "module.users": false,
   "module.account": true,
   "module.dataPipeline": true,
   "module.support": true,

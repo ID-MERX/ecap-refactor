@@ -178,7 +178,7 @@ export const features = {
   "module.districts": false,     // count endpoints trust district; definitions need backend alignment
   "module.dashboard": false,  // legacy widgets lack safe scoped data/mutation contracts
   "module.calendar": false, // Directus event ownership permissions are unverified
-  "module.users": true,
+  "module.users": false, // user endpoints lack verified server authorization
   "module.account": true,
   "module.dataPipeline": true,
   "module.support": true,

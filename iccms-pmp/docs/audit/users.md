@@ -322,3 +322,11 @@ Edit one Directus account's profile, access level, scope and (optionally) passwo
 9. Should an admin be blocked from trashing, wiping or demoting their own account?
 10. Should the reset confirm's "expire in 24 hours" text come from config, since the lifetime depends on Directus server config?
 11. Province, district and ward pickers: use the config geography (`platform/scope`) plus `/etl/facility-list`, instead of downloading the national household register?
+
+## Phase 5 implementation decision and status (2026-11-03)
+
+The user approved a **default-off scaffold only**. The legacy user list downloads the full directory, edit paths can change any account's role/scope, and the browser-side deletion cascade deletes or scrubs related notifications, flags, and calendar records. Do not port that cascade or expose account data/actions without verified server-side authorization.
+
+- `module.users` is false by default. Only `/users` is registered, with `users.manage` and national scope; the feature flag removes its route/nav by default.
+- When deliberately enabled for the scaffold, `/users` shows an unavailable state and makes no `/users` or `/roles` requests. It has no create/edit/by-ID routes, password-reset, suspend/restore/delete actions, or client-side cascade.
+- Backend follow-up before enabling user management: enforce caller authorization on list and writes; define administrator/support authority for role/scope assignment; prevent self-lockout as appropriate; and provide an auditable server-side archive/delete operation. Do not fetch the national directory as a workaround.
