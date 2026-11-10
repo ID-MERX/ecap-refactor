@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/core/auth";
 
 import { programConfig } from "@/config";
 import { ErrorState } from "@/platform/data-table/states";
@@ -21,6 +22,9 @@ export function VcaFlagPanel({
   facility: string | null;
   verifier: string;
 }): ReactNode {
+  const { state } = useAuth();
+  const canResolve =
+    state.status === "authenticated" && state.access.permissions.has("flags.resolve");
   const client = useQueryClient();
   const [category, setCategory] = useState("");
   const [severity, setSeverity] = useState("");
@@ -111,7 +115,7 @@ export function VcaFlagPanel({
               <p className="mt-2 text-xs text-slate-500">
                 {flag.verifier || "Unknown verifier"} · {flag.created_on?.slice(0, 10) ?? "—"}
               </p>
-              {flag.status !== "resolved" ? (
+              {canResolve && flag.status !== "resolved" ? (
                 <button
                   type="button"
                   disabled={resolve.isPending}

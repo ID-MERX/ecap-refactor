@@ -3,10 +3,11 @@ import { describe, expect, it } from "vitest";
 import { allFeatureKeys, resolveFlags, type FeatureKey } from "./features";
 
 describe("features", () => {
-  it("ships referrals and the training log off by default", () => {
-    // No backend endpoint exists for referrals, and the training log has no API at all. Both would
-    // show empty or fake pages if they defaulted on.
+  it("ships referrals, flags, and the training log off by default", () => {
+    // Referrals has no usable list API; Flags has no backend-enforced caller scope; the training log
+    // has no API. Enabling any of these would expose unsafe or fake pages.
     expect(resolveFlags([])["module.referrals"]).toBe(false);
+    expect(resolveFlags([])["module.flags"]).toBe(false);
     expect(resolveFlags([])["module.trainingLog"]).toBe(false);
   });
 

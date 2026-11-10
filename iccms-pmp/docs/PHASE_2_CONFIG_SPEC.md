@@ -172,7 +172,7 @@ export const features = {
   "module.pmtct": true,
   "module.motherIndex": true,
   "module.referrals": false,   // no working backend endpoint yet — AUDIT.md §6.2
-  "module.flags": true,
+  "module.flags": false,    // unscoped backend list/mutations; keep off until caller scope is enforced
   "module.performance": true,
   "module.caseworkers": true,
   "module.districts": true,

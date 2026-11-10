@@ -230,3 +230,14 @@ Standalone form to flag a household: shows read-only household reference details
 5. For VCA-only flags, should row click go to `/vcas/:vcaId`?
 6. Notification recipients: keep role-name keyword matching, or move to a backend-side rule/role list in config?
 7. Should the `/flags/new` form accept `vcaId` as well as `householdId`?
+
+## Phase 5 implementation status (2026-11-03)
+
+The user approved a **default-off scaffold**. `module.flags` is now false by default because the legacy Directus list operation returns an unscoped collection, `district`/`province` are not reliably written on flag rows, and the current write paths do not enforce caller scope. Do not turn this module on until backend authorization and scope enforcement have been implemented and verified.
+
+- `/flags` and `/flags/new` are registered under the feature flag, require `records.view`, and require district-or-higher scope. The current list page deliberately makes no flag-collection request and states why the register is unavailable.
+- `/flags/new?householdId=...` or `/flags/new?vcaId=...` accepts exactly one ID. It uses exported household/VCA scoped context queries, verifies the result is in the assigned district set, returns only IDs and jurisdiction/facility fields, and sets `persist: false`. It does not perform a direct by-ID fetch or submit a flag.
+- The flag tabs/panels on existing household/VCA profiles are hidden while `module.flags` is off, so the old unscoped history and mutation paths are not reachable from those profiles. Resolve controls in those panels additionally require existing `flags.resolve` permission (currently national/province only).
+- No flag rows are queried, cached, exported, or mutated by the scaffold. The `flags.resolve` permission is not widened; create/resolve mutations remain unavailable until the backend enforces write permissions and scope.
+
+Backend follow-up before enabling: provide a caller-authorized, scope-enforced, paginated list endpoint (or server-side relation filter); ensure flag records can be scoped through trusted household/VCA relations; enforce create/resolve authorization and caller scope on mutations; document notification recipients and outcome semantics. Frontend row filtering alone is not an authorization boundary.

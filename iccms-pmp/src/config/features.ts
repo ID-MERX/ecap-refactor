@@ -5,7 +5,8 @@
  * loader reads this), so a disabled module is unreachable — not merely hidden.
  *
  * Two modules default off because they cannot show real data yet:
- * - `module.referrals` — no working backend endpoint (`docs/AUDIT.md` §6.2, backend ask #9).
+ * - `module.referrals` — no working district-level referral list endpoint (`docs/AUDIT.md` §6.2, backend ask #9).
+ * - `module.flags` — backend list/mutation operations do not enforce caller scope; flag rows also lack reliable district/province fields (`docs/audit/flags.md`).
  * - `module.trainingLog` — no API at all; the legacy page was demo data (`docs/AUDIT.md` §6.9).
  *
  * `support.calls` is off per decision 4 (WebRTC calls, chat and voice notes are dropped).
@@ -24,7 +25,7 @@ export const defaultFeatures = {
   "module.pmtct": true,
   "module.motherIndex": true,
   "module.referrals": false,
-  "module.flags": true,
+  "module.flags": false,
   "module.performance": true,
   "module.caseworkers": true,
   "module.districts": true,

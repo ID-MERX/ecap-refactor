@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 
+import { isEnabled } from "@/config";
 import { useAuth } from "@/core/auth";
 import { displayName } from "@/core/auth/me";
 import { ErrorState } from "@/platform/data-table/states";
@@ -20,9 +21,8 @@ const PROFILE_TABS = [
   "Case plans",
   "Caregiver services",
   "Referrals",
-  "Flags",
 ] as const;
-type ProfileTab = (typeof PROFILE_TABS)[number];
+type ProfileTab = (typeof PROFILE_TABS)[number] | "Flags";
 const PROFILE_WINDOW: FyWindow = { from: null, to: null, label: "All time", slug: "all_time" };
 
 function comparableId(value: unknown): string {
@@ -54,6 +54,8 @@ export function HouseholdProfilePage(): ReactNode {
   const { state } = useAuth();
   const scope = state.status === "authenticated" ? state.access.scope : { level: "none" as const };
   const profileScopeKey = scopeKey(scope);
+  const flagsEnabled = isEnabled("module.flags");
+  const tabs = flagsEnabled ? [...PROFILE_TABS, "Flags" as const] : PROFILE_TABS;
   const [tab, setTab] = useState<ProfileTab>("Summary");
 
   // Search only the records fetched for this user's assigned scope. No by-ID detail request is made
@@ -156,7 +158,7 @@ export function HouseholdProfilePage(): ReactNode {
         aria-label="Household profile sections"
         className="flex flex-wrap gap-2 border-b border-slate-200"
       >
-        {PROFILE_TABS.map((item) => (
+        {tabs.map((item) => (
           <button
             key={item}
             type="button"
@@ -245,7 +247,7 @@ export function HouseholdProfilePage(): ReactNode {
           empty="No referrals found."
         />
       ) : null}
-      {tab === "Flags" ? (
+      {flagsEnabled && tab === "Flags" ? (
         <HouseholdFlagPanel
           householdId={household.householdId}
           scopeKey={profileScopeKey}
